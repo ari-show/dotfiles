@@ -17,7 +17,7 @@ Nix + make + perl でセットアップを自動化している。
 dotfiles/
 ├── bootstrap/      # セットアップ用の perl スクリプト
 ├── config/         # OS ごとの設定ファイル（mac / linux）
-├── .config/        # ~/.config 配下にリンクする設定（wezterm / ghostty / herdr）
+├── .config/        # ~/.config 配下にリンクする設定（wezterm / ghostty / herdr / nix）
 ├── docs/           # 各種ドキュメント（docs/README.md が入り口）
 ├── nix/            # flake.nix（dotfiles-tools の定義）
 ├── makefile        # セットアップ用ターゲット（make help で一覧）
@@ -107,7 +107,7 @@ ${EDITOR:-vi} ~/.config/nix/nix.conf
 ---
 ### 3) dotfiles 用ツールを Nix profile に追加する
 
-このリポジトリでは、`make` / `perl` / `uv` などのセットアップに必要なツールを `dotfiles-tools` として定義しています。
+このリポジトリでは、`make` / `perl` / `uv` / `gh` などのセットアップに必要なツールを `dotfiles-tools` として定義しています。
 
 `dotfiles-tools` を Nix profile に追加すると、通常の shell からこれらのコマンドを使えるようになります。
 
@@ -150,9 +150,10 @@ hash -r
 uv --version
 make --version
 perl --version
+gh --version
 ```
 
-これで、毎回 `nix develop` に入らなくても、通常の shell から `uv` / `make` / `perl` が使えるようになります。
+これで、毎回 `nix develop` に入らなくても、通常の shell から `uv` / `make` / `perl` / `gh` が使えるようになります。
 
 ---
 
@@ -163,6 +164,18 @@ perl --version
 ```bash
 cd ~/dotfiles
 make setup
+```
+
+`make setup` は Nix のユーザー設定もリンクします。
+
+```text
+~/.config/nix/nix.conf -> ~/dotfiles/.config/nix/nix.conf
+```
+
+Nix の設定だけを適用する場合は、次を実行します。
+
+```bash
+make nix
 ```
 
 ---

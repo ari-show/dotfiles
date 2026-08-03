@@ -16,7 +16,7 @@
           pkgs = import nixpkgs { inherit system; };
           dotfilesTools = pkgs.buildEnv {
             name = "dotfiles-tools";
-            paths = with pkgs; [ uv gnumake perl ];
+            paths = with pkgs; [ uv gnumake perl gh ];
           };
         in
         {
@@ -30,7 +30,7 @@
         in
         {
           default = pkgs.mkShell {
-            packages = with pkgs; [ uv gnumake perl ];
+            packages = with pkgs; [ uv gnumake perl gh ];
           };
         });
     };
