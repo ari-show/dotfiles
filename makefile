@@ -1,4 +1,4 @@
-setup: os wezterm herdr ghostty
+setup: os wezterm herdr ghostty nix
 
 .PHONY: help setup mac uv-check
 os:bootstrap/setup.pm
@@ -13,10 +13,13 @@ herdr:bootstrap/herdr.pm
 ghostty:bootstrap/ghostty.pm
 	perl bootstrap/ghostty.pm
 
+nix:bootstrap/nix.pm
+	perl bootstrap/nix.pm
+
 mac: os
 linux: os
 
-.PHONY: help setup os wezterm herdr ghostty mac linux
+.PHONY: help setup os wezterm herdr ghostty nix mac linux
 
 help:
 	@echo "Available targets:"
@@ -25,6 +28,7 @@ help:
 	@echo "  make wezterm  # Link WezTerm config (~/.config/wezterm)"
 	@echo "  make herdr    # Link herdr config (~/.config/herdr/config.toml)"
 	@echo "  make ghostty  # Link Ghostty config (~/.config/ghostty/config)"
+	@echo "  make nix      # Link Nix config (~/.config/nix/nix.conf)"
 	@echo "  make mac      # Alias of setup"
 	@echo "  make linux    # Alias of setup"
 	@echo "  make uv-check # Check uv via Nix flake shell"
