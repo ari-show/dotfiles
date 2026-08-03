@@ -1,13 +1,28 @@
 # dotfiles
 
-## dotfiles-tools の取得方法について
-`nix profile add "github:ShotaArima/dotfiles?dir=nix#dotfiles-tools"` は、GitHub Actions でビルド済みの成果物を直接取得するコマンドではありません。
+macOS / Linux 向けの個人設定ファイル（dotfiles）を管理するリポジトリ。
+Nix + make + perl でセットアップを自動化している。
 
-このコマンドは GitHub 上の `nix/flake.nix` を取得し、そこに定義された `dotfiles-tools` を手元の Nix で評価して profile に追加します。
+## 目次
 
-`dotfiles-tools` に含まれる `uv` / `gnumake` / `perl` などは、利用可能であれば Nix の binary cache から取得されます。取得できない場合はローカルでビルドされます。
+- [構成](#構成)
+- [セットアップ方法](#セットアップ方法)
+- [セットアップ方式の使い分け](#セットアップ方式の使い分け)
+- [補足: dotfiles-tools の取得方法について](#補足-dotfiles-tools-の取得方法について)
+- [ドキュメント](#ドキュメント)
 
-GitHub Actions でビルドした成果物を配布したい場合は、別途 binary cache や artifact を用意し、`nix copy` などで closure を取り込む構成にします。
+## 構成
+
+```
+dotfiles/
+├── bootstrap/      # セットアップ用の perl スクリプト
+├── config/         # OS ごとの設定ファイル（mac / linux）
+├── .config/        # ~/.config 配下にリンクする設定（wezterm / ghostty / herdr）
+├── docs/           # 各種ドキュメント（docs/README.md が入り口）
+├── nix/            # flake.nix（dotfiles-tools の定義）
+├── makefile        # セットアップ用ターゲット（make help で一覧）
+└── nix-install.sh  # Nix のインストールスクリプト
+```
 
 ## セットアップ方法
 
@@ -176,7 +191,6 @@ nix profile add "github:ShotaArima/dotfiles?dir=nix#dotfiles-tools" --no-write-l
 
 > 補足: `nix profile add` は「既存の package を自動で置き換える」コマンドではありません。
 > 同じ `dotfiles-tools` を何度も追加すると profile に重複することがあるため、更新したい場合は既存の entry を削除してから追加してください。
----
 
 ## セットアップ方式の使い分け
 
@@ -187,3 +201,21 @@ nix profile add "github:ShotaArima/dotfiles?dir=nix#dotfiles-tools" --no-write-l
 | `nix profile install ...#dotfiles-tools` | `make` や `perl` を普段の profile に入れて使う |
 | ホストの `make` / `perl` を使う | Nix を使わず従来通り実行する |
 
+## 補足: dotfiles-tools の取得方法について
+
+`nix profile add "github:ShotaArima/dotfiles?dir=nix#dotfiles-tools"` は、GitHub Actions でビルド済みの成果物を直接取得するコマンドではありません。
+
+このコマンドは GitHub 上の `nix/flake.nix` を取得し、そこに定義された `dotfiles-tools` を手元の Nix で評価して profile に追加します。
+
+`dotfiles-tools` に含まれる `uv` / `gnumake` / `perl` などは、利用可能であれば Nix の binary cache から取得されます。取得できない場合はローカルでビルドされます。
+
+GitHub Actions でビルドした成果物を配布したい場合は、別途 binary cache や artifact を用意し、`nix copy` などで closure を取り込む構成にします。
+
+## ドキュメント
+
+各ツール・OS ごとの詳細な手順は [docs/README.md](./docs/README.md) にまとめています。
+
+- [macOS セットアップ](./docs/mac.md) — クローンから `make setup`、複数端末間での更新手順
+- [Ghostty](./docs/ghostty/installing/README.md) — インストールと設定リンク
+- [WezTerm](./.config/wezterm/README.md) — 設定の構成とリンク手順
+- [herdr エージェントオーケストレーション](./docs/herdr/agent-orchestration.md) — AI エージェントの自動運用
