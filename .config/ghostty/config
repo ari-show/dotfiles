@@ -30,3 +30,16 @@ confirm-close-surface = false
 copy-on-select = true
 mouse-hide-while-typing = true
 
+# Cmd+Enter で全画面表示にしない
+keybind = super+enter=unbind
+
+# --- ペイン操作 ---
+# WezTerm と同じ Ctrl+; を Leader として使う
+# ペイン間を移動（Vim と同じ方向キー）
+keybind = ctrl+;>h=goto_split:left
+keybind = ctrl+;>j=goto_split:down
+keybind = ctrl+;>k=goto_split:up
+keybind = ctrl+;>l=goto_split:right
+
+# 未定義キーは端末へ流さず、Leader の待機を終了する
+keybind = ctrl+;>catch_all=ignore
