@@ -163,7 +163,13 @@ else
   if [ -n "$CURRENT_MOUNT" ] && [ "$CURRENT_MOUNT" != "/nix" ]; then
     diskutil unmount "$CURRENT_MOUNT" || diskutil unmount force "$CURRENT_MOUNT"
   fi
-  diskutil mount -mountPoint /nix "$UUID"
+  if [ "$ENCRYPTED" = "Yes" ]; then
+    # 暗号化ボリュームは unmount するとロックされるので、キーチェーンのパスワードで unlock + mount する
+    security find-generic-password -s "$UUID" -w \
+      | diskutil apfs unlockVolume "$UUID" -mountpoint /nix -stdinpassphrase
+  else
+    diskutil mount -mountPoint /nix "$UUID"
+  fi
   echo "[DONE] マウントした"
 fi
 ls -d /nix/store /nix/var/nix/profiles/default >/dev/null
@@ -181,8 +187,14 @@ echo "[DONE] nix-daemon を再起動した"
 
 # ---------------------------------------------------------------- 8. 確認
 step "確認"
-/nix/var/nix/profiles/default/bin/nix --version
 sleep 2
-/nix/var/nix/profiles/default/bin/nix store ping
+# sudo で呼ばれた場合は元のユーザーとして daemon 経由の動作を確認する
+if [ -n "${SUDO_USER:-}" ]; then
+  sudo -u "$SUDO_USER" -H /nix/var/nix/profiles/default/bin/nix --version
+  sudo -u "$SUDO_USER" -H /nix/var/nix/profiles/default/bin/nix store info
+else
+  HOME=/var/root /nix/var/nix/profiles/default/bin/nix --version
+  HOME=/var/root /nix/var/nix/profiles/default/bin/nix store info
+fi
 echo
 echo "[OK] 修復完了。新しいターミナルを開いて 'nix --version' を確認してください。"
