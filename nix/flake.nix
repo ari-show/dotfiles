@@ -73,6 +73,7 @@
               pkgs.gnumake
               pkgs.perl
               pkgs.gh
+              pkgs.tmux
               omnigent
             ];
           };

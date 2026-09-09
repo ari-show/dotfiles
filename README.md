@@ -132,7 +132,8 @@ ${EDITOR:-vi} ~/.config/nix/nix.conf
 ---
 ### 3) dotfiles 用ツールを Nix profile に追加する
 
-このリポジトリでは、`make` / `perl` / `uv` / `gh` / Omnigent などのセットアップに必要なツールを `dotfiles-tools` として定義しています。
+このリポジトリでは、`make` / `perl` / `uv` / `gh` / `tmux` / Omnigent などのセットアップや日常作業に必要な CLI ツールを `dotfiles-tools` として定義しています。
+macOS で `brew install <cli>` していたものは、原則として `dotfiles-tools` に追加して Nix 側で管理します（GUI アプリは Homebrew cask のまま）。
 
 `dotfiles-tools` を Nix profile に追加すると、通常の shell からこれらのコマンドを使えるようになります。
 
@@ -176,12 +177,13 @@ uv --version
 make --version
 perl --version
 gh --version
+tmux -V
 omnigent --version
 omni --version
 modal --version
 ```
 
-これで、毎回 `nix develop` に入らなくても、通常の shell から `uv` / `make` / `perl` / `gh` / `omnigent` が使えるようになります。
+これで、毎回 `nix develop` に入らなくても、通常の shell から `uv` / `make` / `perl` / `gh` / `tmux` / `omnigent` が使えるようになります。
 
 Omnigent は Python 3.12 上の `omnigent[databricks,modal]` としてバージョンと依存を固定しています。`omnigent` と短縮名の `omni` に加え、Modal の認証などに使う `modal` コマンドも profile に追加されます。Omnigent の更新は `omni upgrade` ではなく、`nix/omnigent/pyproject.toml` のバージョンを変更して lock file を更新した後、`dotfiles-tools` を profile に入れ直してください。
 
