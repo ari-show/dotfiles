@@ -74,6 +74,8 @@
               pkgs.perl
               pkgs.gh
               pkgs.tmux
+              pkgs.tree
+              pkgs.poppler-utils
               omnigent
             ];
           };
