@@ -19,7 +19,7 @@ nix:bootstrap/nix.pm
 mac: os
 linux: os
 
-.PHONY: help setup os wezterm herdr ghostty nix mac linux
+.PHONY: help setup os wezterm herdr ghostty nix nix-repair mac linux
 
 help:
 	@echo "Available targets:"
@@ -29,9 +29,13 @@ help:
 	@echo "  make herdr    # Link herdr config (~/.config/herdr/config.toml)"
 	@echo "  make ghostty  # Link Ghostty config (~/.config/ghostty/config)"
 	@echo "  make nix      # Link Nix config (~/.config/nix/nix.conf)"
+	@echo "  make nix-repair # Repair /nix mount after macOS upgrade (needs sudo)"
 	@echo "  make mac      # Alias of setup"
 	@echo "  make linux    # Alias of setup"
 	@echo "  make uv-check # Check uv via Nix flake shell"
+
+nix-repair: nix-repair.sh
+	sudo bash nix-repair.sh
 
 uv-check:
 	@nix develop ./nix -c uv --version

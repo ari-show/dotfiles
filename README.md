@@ -21,7 +21,8 @@ dotfiles/
 ├── docs/           # 各種ドキュメント（docs/README.md が入り口）
 ├── nix/            # flake.nix（dotfiles-tools の定義）
 ├── makefile        # セットアップ用ターゲット（make help で一覧）
-└── nix-install.sh  # Nix のインストールスクリプト
+├── nix-install.sh  # Nix のインストールスクリプト
+└── nix-repair.sh   # macOS アップグレード後の /nix 修復スクリプト
 ```
 
 ## セットアップ方法
@@ -71,6 +72,30 @@ nix --version
 ```
 
 > 補足: `nix: command not found` になる場合は、ターミナルを開き直すか、shell の初期化ファイルで PATH を上書きしていないか確認してください。
+
+---
+
+### 1-2) macOS アップグレード後に Nix が消えた場合
+
+macOS のメジャーアップグレードで `/etc/synthetic.conf` / `/etc/fstab` / `/etc/zshrc` が初期化されると、
+`/nix` が消えて `nix: command not found` になります。このとき `Nix Store` ボリューム自体（store の中身）は残っていて、
+`/Volumes/Nix Store` にマウントされています。
+
+以下で消えた設定を復元し、`/nix` にマウントし直します（sudo が必要）。
+
+```bash
+cd ~/dotfiles
+make nix-repair
+```
+
+復元するもの:
+
+- `/etc/synthetic.conf` の `nix` 行（`/nix` ディレクトリ）
+- `/etc/fstab` の `/nix` マウント行
+- `/Library/LaunchDaemons/org.nixos.darwin-store.plist`（起動時にボリュームを復号して `/nix` にマウント）
+- `/etc/zshrc` / `/etc/bashrc` の Nix 初期化フック
+
+`/nix` を再起動なしで作れなかった場合はその旨を表示して終了するので、再起動後にもう一度 `make nix-repair` を実行してください。
 
 ---
 
