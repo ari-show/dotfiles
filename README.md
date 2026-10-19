@@ -217,6 +217,28 @@ Nix の設定だけを適用する場合は、次を実行します。
 make nix
 ```
 
+`make setup` は ghtkn の設定もリンクします。
+
+```text
+~/.config/ghtkn/ghtkn.yaml -> ~/dotfiles/.config/ghtkn/ghtkn.yaml
+```
+
+ghtkn の設定だけを適用する場合は、次を実行します。
+
+```bash
+make ghtkn
+```
+
+#### ghtkn の認証
+
+ghtkn v0.4.0 以降は、device flow を開始するのは `ghtkn auth` だけです。`ghtkn get` / `ghtkn exec` / Git credential helper は device flow を自動では開始しないため、先に `ghtkn auth` で認証してから使います。
+
+```bash
+ghtkn auth ari-show/none
+```
+
+`ghtkn.yaml` の `clipboard.enable: true` により、`ghtkn auth` が表示する one-time code は自動でクリップボードにコピーされます。表示されたコードを、自分で `ghtkn auth` を実行したときだけ GitHub の画面に貼り付けてください（身に覚えのないコードは入力しないこと）。
+
 ---
 
 ### 5) GitHub 上の flake から直接 profile に追加する場合
