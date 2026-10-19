@@ -66,6 +66,25 @@
               mainProgram = "omnigent";
             };
           };
+          ghtkn = (pkgs.buildGoModule.override { go = pkgs.go_1_27; }) rec {
+            pname = "ghtkn";
+            version = "0.4.1";
+            src = pkgs.fetchFromGitHub {
+              owner = "suzuki-shunsuke";
+              repo = "ghtkn";
+              rev = "v${version}";
+              hash = "sha256-EtILxa6d6kmsd/6DykGqfokc3rrsXzf7ciettCkgo5E=";
+            };
+            subPackages = [ "cmd/ghtkn" ];
+            vendorHash = "sha256-oA9US4CoGZrkhyVCiDooV5PkTV9akDUtcSqguc+4sEk=";
+            ldflags = [ "-s" "-w" "-X main.version=${version}" ];
+            doCheck = false;
+            meta = {
+              description = "CLI to create GitHub User Access Tokens for GitHub Apps via Device Flow";
+              homepage = "https://github.com/suzuki-shunsuke/ghtkn";
+              mainProgram = "ghtkn";
+            };
+          };
           dotfilesTools = pkgs.buildEnv {
             name = "dotfiles-tools";
             paths = [
@@ -76,12 +95,13 @@
               pkgs.tmux
               pkgs.tree
               pkgs.poppler-utils
+              ghtkn
               omnigent
             ];
           };
         in
         {
-          inherit omnigent;
+          inherit omnigent ghtkn;
           dotfiles-tools = dotfilesTools;
           default = dotfilesTools;
         });
