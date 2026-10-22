@@ -239,6 +239,45 @@ ghtkn auth ari-show/none
 
 `ghtkn.yaml` の `clipboard.enable: true` により、`ghtkn auth` が表示する one-time code は自動でクリップボードにコピーされます。表示されたコードを、自分で `ghtkn auth` を実行したときだけ GitHub の画面に貼り付けてください（身に覚えのないコードは入力しないこと）。
 
+#### Codex sandbox での利用
+
+`ghtkn.yaml` の `backend.type: agent` により、トークンは ghtkn agent（Unix socket `~/.cache/ghtkn/agent.sock`）が保持します。Codex の sandbox は既定でこの socket への接続を拒否するため、`~/.codex/config.toml` に次の permission profile を追加します（`~/.codex` は dotfiles 管理外なので手で追記します。`~` は展開されないので絶対パスで書くこと）。
+
+```toml
+default_permissions = "ghtkn"
+
+[features]
+network_proxy = true
+
+[permissions.ghtkn]
+extends = ":workspace"
+description = "Workspace profile plus the ghtkn agent socket."
+
+[permissions.ghtkn.network]
+enabled = true
+
+[permissions.ghtkn.network.unix_sockets]
+"/Users/<you>/.cache/ghtkn/agent.sock" = "allow"
+
+# ghtkn 自体には不要だが、トークンを使う gh / git には必要
+[permissions.ghtkn.network.domains]
+"github.com" = "allow"
+"api.github.com" = "allow"
+```
+
+agent は sandbox の外で動かすので、Codex を起動する前に自分の shell で起動・unlock しておきます（`unlock` はパスフレーズを求めるため、コーディングエージェント経由では実行しないこと）。
+
+```bash
+ghtkn agent start
+ghtkn agent unlock
+```
+
+設定が効いているかは、モデルを呼ばずに sandbox 内でコマンドを実行する `codex sandbox` で確認できます。
+
+```bash
+codex sandbox -- ghtkn agent status
+```
+
 ---
 
 ### 5) GitHub 上の flake から直接 profile に追加する場合

@@ -1,5 +1,8 @@
+min_expiration: 30m
 clipboard:
   enable: true
+backend:
+  type: agent
 apps:
   - name: ari-show/none
     client_id: Iv23liZ3Tlfo3nGfgkcA
