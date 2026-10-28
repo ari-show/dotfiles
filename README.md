@@ -305,6 +305,12 @@ nix profile add "github:ShotaArima/dotfiles?dir=nix#dotfiles-tools" --no-write-l
 > 補足: `nix profile add` は「既存の package を自動で置き換える」コマンドではありません。
 > 同じ `dotfiles-tools` を何度も追加すると profile に重複することがあるため、更新したい場合は既存の entry を削除してから追加してください。
 
+すでに profile に入っている `dotfiles-tools` を新しい lock で入れ直すだけなら、削除と追加を繰り返す代わりに `nix profile upgrade <Name>` が使えます（ローカル flake の場合は `make nix-update` / `make nix-sync`、詳細は [docs/mac.md](./docs/mac.md) の「3. Nix 管理のツールを更新する」）。
+
+```bash
+nix profile upgrade nix --refresh
+```
+
 ## セットアップ方式の使い分け
 
 | 方法 | 用途 |

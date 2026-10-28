@@ -79,5 +79,9 @@ autoload -Uz compinit
 compinit
 # End of Docker CLI completions
 
-. "$HOME/.local/bin/env"
+# ~/.local/bin (claude, codex, herdr など) は Nix profile より後ろに置く
+case ":${PATH}:" in
+    *:"$HOME/.local/bin":*) ;;
+    *) export PATH="$PATH:$HOME/.local/bin" ;;
+esac
 
