@@ -5,6 +5,7 @@
 alias ls='ls -G'
 alias ll='ls -lh'
 alias la='ls -A'
+alias l='clear && ls'
 
 # git系
 alias g='git'
@@ -16,12 +17,18 @@ alias gco='git checkout'
 alias gpl='git pull'
 alias gb='git branch'
 alias gd='git diff'
+alias gl='git log'
+alias gf='git fetch'
+alias gst='git status'
 
 # dotfiles管理
 alias zshrc='vi ~/.zshrc'
 alias zprofile='vi ~/.zprofile'
 alias reloadzrc='source ~/.zshrc && echo ".zshrc reloaded!"'
 alias reloadzpro='source ~/.zprofile && echo ".zprofile reloaded!"'
+
+# Obsidian系（カレントディレクトリを Vault として開く）
+alias obsd='open "obsidian://open?path=$(pwd)"'
 
 # docker系
 alias d='docker'
@@ -42,7 +49,8 @@ alias rmdir='rmdir -v'
 
 # その他便利なエイリアス
 alias tree='tree -C'
-alias -g C='| pbcopy'
+alias -g C='| pbcopy'              # copy
+alias -g G='| grep --color=auto'   # 鉄板
 
 # ========= MATLABのエイリアス設定 ==========
 alias mlterm="/Applications/MATLAB_R2025b.app/bin/matlab -nodesktop"
@@ -69,8 +77,11 @@ fpath=($HOME/.docker/completions $fpath)
 autoload -Uz compinit
 compinit
 
-# ~/.local/bin は Nix profile より後ろに置く
+# ~/.local/bin (claude, codex, herdr など) は Nix profile より後ろに置く
 case ":${PATH}:" in
     *:"$HOME/.local/bin":*) ;;
     *) export PATH="$PATH:$HOME/.local/bin" ;;
 esac
+
+# GPG 署名コミットでパスフレーズ入力をこの端末に向ける
+export GPG_TTY=$(tty)
