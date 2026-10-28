@@ -9,5 +9,24 @@
 # macOS
 .DS_Store
 
+# 秘密情報・認証情報
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.secret
+*.secrets
+*.token
+credentials/
+secrets/
+.credentials/
+.secrets/
+
+# ghtkn のローカル認証キャッシュ
+.cache/ghtkn/
+
 # バックアップディレクトリの除外
 back-up/
