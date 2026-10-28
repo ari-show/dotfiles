@@ -203,7 +203,10 @@ nix profile add ./nix#omnigent
 ```bash
 cd ~/dotfiles
 make setup
+source ~/.zprofile  # PATH などを現在の shell に反映（macOS）
 ```
+
+`make` は子プロセスとして実行されるため、`make setup` の中で `source ~/.zprofile` を実行しても、実行元の shell の環境には反映されません。macOS で `.zprofile` を更新した場合は、`make setup` の後に `source ~/.zprofile` を実行してください。新しいターミナルを開いても反映されます。
 
 `make setup` は Nix のユーザー設定もリンクします。
 
