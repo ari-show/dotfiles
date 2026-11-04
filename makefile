@@ -22,7 +22,8 @@ ghtkn:bootstrap/ghtkn.pm
 mac: os
 linux: os
 
-.PHONY: help setup os wezterm herdr ghostty nix ghtkn nix-repair nix-update nix-sync mac linux
+.PHONY: help setup os wezterm herdr ghostty nix ghtkn nix-repair nix-update nix-sync mac linux \
+	check lint fmt fmt-check build rollback outdated
 
 help:
 	@echo "Available targets:"
@@ -36,6 +37,13 @@ help:
 	@echo "  make nix-repair # Repair /nix mount after macOS upgrade (needs sudo)"
 	@echo "  make nix-update # Update nix/flake.lock, build, and upgrade the profile (primary Mac)"
 	@echo "  make nix-sync   # Reinstall dotfiles-tools from the committed lock (other Macs)"
+	@echo "  make check      # Run everything CI runs (lint + nix flake check)"
+	@echo "  make lint       # Perl syntax check of bootstrap/*.pm"
+	@echo "  make fmt        # Format nix/**/*.nix with nixfmt"
+	@echo "  make fmt-check  # Fail if any nix/**/*.nix is not formatted"
+	@echo "  make build      # Build dotfiles-tools without touching the profile"
+	@echo "  make rollback   # Roll the Nix profile back one generation"
+	@echo "  make outdated   # List flake inputs / pinned packages that may be outdated"
 	@echo "  make mac      # Alias of setup"
 	@echo "  make linux    # Alias of setup"
 	@echo "  make uv-check # Check uv via Nix flake shell"
@@ -58,3 +66,32 @@ nix-update:
 nix-sync:
 	nix profile upgrade nix
 	nix profile list
+
+# ---- 検査・整形（CI の check workflow も `make check` を実行する） ----
+
+NIX_FILES_CMD = find . -name '*.nix' -not -path './result*'
+
+# push 前に手元で確認する。CI と同じ内容。
+check: lint
+	nix flake check ./nix --all-systems --no-build
+	nix flake check ./nix -L
+
+lint:
+	@for f in bootstrap/*.pm; do perl -c "$$f" || exit 1; done
+
+fmt:
+	cd nix && $(NIX_FILES_CMD) -print0 | xargs -0 nix fmt --
+
+fmt-check:
+	cd nix && $(NIX_FILES_CMD) -print0 | xargs -0 nix fmt -- --check
+
+build:
+	nix build ./nix#dotfiles-tools --no-link -L
+
+# nix-update / nix-sync で入れた profile がおかしいときに 1 世代戻す。
+rollback:
+	nix profile rollback
+	nix profile list
+
+outdated:
+	@perl scripts/outdated

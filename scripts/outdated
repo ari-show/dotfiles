@@ -1,0 +1,82 @@
+#!/usr/bin/env perl
+# nix/ の flake で古くなっていそうなものを一覧にする（何も書き換えない）。
+#
+#   1. flake inputs（nixpkgs / uv2nix など）: lock されている rev と、その commit 日からの経過日数
+#   2. flake.nix に version / hash を直書きしているパッケージ（fetchFromGitHub を使うもの）:
+#      固定している version と GitHub の最新リリース
+#
+# 使い方: make outdated（または perl scripts/outdated）
+# 更新するとき: inputs は `make nix-update`、固定パッケージは
+#   `cd nix && nix run --inputs-from . nixpkgs#nix-update -- --flake <name>`
+use strict;
+use warnings;
+use JSON::PP qw(decode_json);
+use FindBin qw($Bin);
+use POSIX qw(strftime);
+
+my $flake     = "$Bin/../nix";
+my $stale_days = $ENV{OUTDATED_STALE_DAYS} // 30;
+my $found     = 0;
+
+sub run {
+    my @cmd = @_;
+    open my $fh, '-|', @cmd or die "failed to run @cmd: $!\n";
+    local $/;
+    my $out = <$fh>;
+    close $fh or die "command failed: @cmd\n";
+    return $out;
+}
+
+# ---- 1. flake inputs ----
+my $meta  = decode_json(run(qw(nix flake metadata --json), $flake));
+my $nodes = $meta->{locks}{nodes};
+my $root  = $nodes->{ $meta->{locks}{root} };
+
+print "Flake inputs (stale after ${stale_days} days):\n";
+for my $name (sort keys %{ $root->{inputs} }) {
+    my $ref    = $root->{inputs}{$name};
+    next if ref $ref;    # follows で他の input を指しているもの
+    my $locked = $nodes->{$ref}{locked} or next;
+    my $age    = int((time - $locked->{lastModified}) / 86400);
+    my $mark   = $age > $stale_days ? 'STALE' : 'ok';
+    $found++ if $mark eq 'STALE';
+    printf "  %-5s %-24s %-8s %s (%d days ago)\n",
+        $mark, $name, substr($locked->{rev} // '?', 0, 7),
+        strftime('%Y-%m-%d', gmtime $locked->{lastModified}), $age;
+}
+
+# ---- 2. version を固定しているパッケージ ----
+my $system = run(qw(nix eval --impure --raw --expr builtins.currentSystem));
+my $pinned = decode_json(run(
+    qw(nix eval --json), "$flake#packages.$system", '--apply',
+    'ps: builtins.mapAttrs (_: p: { inherit (p) version; inherit (p.src) owner repo; })'
+      . ' (builtins.removeAttrs ps (builtins.filter (n: !(ps.${n} ? src.owner)) (builtins.attrNames ps)))'
+));
+
+print "\nPinned packages (GitHub latest release):\n";
+for my $name (sort keys %$pinned) {
+    my $p      = $pinned->{$name};
+    my $latest = latest_release($p->{owner}, $p->{repo});
+    my $mark   = !defined $latest           ? '?'
+               : $latest eq $p->{version}   ? 'ok'
+               :                              'NEW';
+    $found++ if $mark eq 'NEW';
+    printf "  %-5s %-24s %-8s -> %s\n", $mark, $name, $p->{version}, $latest // 'unknown';
+}
+
+sub latest_release {
+    my ($owner, $repo) = @_;
+    my $tag = eval {
+        run('gh', 'api', "repos/$owner/$repo/releases/latest", '--jq', '.tag_name');
+    } // eval {
+        my $json = run('curl', '-fsSL', "https://api.github.com/repos/$owner/$repo/releases/latest");
+        decode_json($json)->{tag_name};
+    };
+    return undef unless defined $tag;
+    chomp $tag;
+    $tag =~ s/^v//;
+    return $tag;
+}
+
+print "\n", $found ? "$found item(s) may need updating.\n" : "Everything looks up to date.\n";
+exit 0;

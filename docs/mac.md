@@ -93,6 +93,17 @@ GitHub 上の flake を直接 profile に入れている端末では `nix profil
 ### 3-iii. 戻したいとき
 
 ```bash
-$ nix profile rollback          # 1 世代前に戻す
+$ make rollback                 # nix profile rollback（1 世代前に戻す）
 $ nix profile wipe-history      # 問題なければ古い世代を削除
 ```
+
+### 3-iv. 更新が必要か調べる / 変更を確認する
+
+```bash
+$ make outdated     # flake inputs の経過日数と、固定パッケージ（ghtkn など）の最新リリースを表示
+$ make fmt          # nix/**/*.nix を nixfmt で整形
+$ make check        # CI と同じ検査（Perl 構文 / nixfmt / 全 system の評価 / dotfiles-tools のビルド）
+```
+
+`nix/` を変更したら push 前に `make check` を通してください。
+GitHub Actions（`.github/workflows/check.yml`）も毎 push で `make check` を実行します。
