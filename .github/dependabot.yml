@@ -1,0 +1,25 @@
+version: 2
+updates:
+  # nix/flake.lock の inputs（nixpkgs / uv2nix など）。pkgs.* はここでまとめて上がる。
+  - package-ecosystem: nix
+    directory: /nix
+    schedule:
+      interval: weekly
+    groups:
+      nix-inputs:
+        patterns: ["*"]
+
+  # Omnigent の Python 依存（nix/omnigent/pyproject.toml / uv.lock）。
+  - package-ecosystem: uv
+    directory: /nix/omnigent
+    schedule:
+      interval: weekly
+
+  # workflow で使っている Actions（actions/checkout など）。
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns: ["*"]
