@@ -23,9 +23,21 @@
     };
   };
 
-  outputs = { self, nixpkgs, pyproject-nix, uv2nix, pyproject-build-systems, ... }:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      pyproject-nix,
+      uv2nix,
+      pyproject-build-systems,
+      ...
+    }:
     let
-      systems = [ "aarch64-darwin" "x86_64-linux" "aarch64-linux" ];
+      systems = [
+        "aarch64-darwin"
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
       forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f system);
       omnigentWorkspace = uv2nix.lib.workspace.loadWorkspace {
         workspaceRoot = ./omnigent;
@@ -35,17 +47,25 @@
       };
     in
     {
-      packages = forAllSystems (system:
+      packages = forAllSystems (
+        system:
         let
           pkgs = import nixpkgs { inherit system; };
-          pythonSet = (pkgs.callPackage pyproject-nix.build.packages {
-            python = pkgs.python312;
-          }).overrideScope (pkgs.lib.composeManyExtensions [
-            pyproject-build-systems.overlays.wheel
-            omnigentOverlay
-          ]);
+          pythonSet =
+            (pkgs.callPackage pyproject-nix.build.packages {
+              python = pkgs.python312;
+            }).overrideScope
+              (
+                pkgs.lib.composeManyExtensions [
+                  pyproject-build-systems.overlays.wheel
+                  omnigentOverlay
+                ]
+              );
           omnigentEnv = pythonSet.mkVirtualEnv "omnigent-env" {
-            omnigent = [ "databricks" "modal" ];
+            omnigent = [
+              "databricks"
+              "modal"
+            ];
           };
           omnigentCli = pkgs.runCommand "omnigent-cli-0.9.0" { } ''
             mkdir -p "$out/bin"
@@ -59,7 +79,8 @@
               omnigentCli
               pkgs.nodejs_22
               pkgs.tmux
-            ] ++ pkgs.lib.optionals pkgs.stdenv.isLinux [ pkgs.bubblewrap ];
+            ]
+            ++ pkgs.lib.optionals pkgs.stdenv.isLinux [ pkgs.bubblewrap ];
             meta = {
               description = "Omnigent CLI with the Databricks and Modal integrations";
               homepage = "https://omnigent.ai";
@@ -77,7 +98,11 @@
             };
             subPackages = [ "cmd/ghtkn" ];
             vendorHash = "sha256-oA9US4CoGZrkhyVCiDooV5PkTV9akDUtcSqguc+4sEk=";
-            ldflags = [ "-s" "-w" "-X main.version=${version}" ];
+            ldflags = [
+              "-s"
+              "-w"
+              "-X main.version=${version}"
+            ];
             doCheck = false;
             meta = {
               description = "CLI to create GitHub User Access Tokens for GitHub Apps via Device Flow";
@@ -104,9 +129,32 @@
           inherit omnigent ghtkn;
           dotfiles-tools = dotfilesTools;
           default = dotfilesTools;
-        });
+        }
+      );
 
-      devShells = forAllSystems (system:
+      # `make fmt` / `make fmt-check` が使う整形ツール。checks.formatting と同じ版を使う。
+      formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt);
+
+      # `make check`（= `nix flake check ./nix`）と CI で実行する検査。
+      checks = forAllSystems (
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in
+        {
+          # nix/ 以下の *.nix が nixfmt で整形済みか。
+          formatting = pkgs.runCommand "check-nixfmt" { nativeBuildInputs = [ pkgs.nixfmt ]; } ''
+            cd ${self}
+            find . -name '*.nix' -print0 | xargs -0 nixfmt --check
+            touch "$out"
+          '';
+          # profile に入れるパッケージがビルドできるか。
+          dotfiles-tools = self.packages.${system}.dotfiles-tools;
+        }
+      );
+
+      devShells = forAllSystems (
+        system:
         let
           pkgs = import nixpkgs { inherit system; };
         in
@@ -114,6 +162,7 @@
           default = pkgs.mkShell {
             packages = [ self.packages.${system}.dotfiles-tools ];
           };
-        });
+        }
+      );
     };
 }
