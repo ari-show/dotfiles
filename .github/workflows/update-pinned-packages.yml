@@ -23,10 +23,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Install Nix
-        uses: cachix/install-nix-action@v31
+        uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b # v31.11.3
 
       - name: Run nix-update
         id: update
@@ -37,7 +37,7 @@ jobs:
         run: |
           set -euo pipefail
           before="$(nix eval --raw ".#${PACKAGE}.version")"
-          nix run nixpkgs#nix-update -- --flake "${PACKAGE}"
+          nix run --inputs-from . nixpkgs#nix-update -- --flake "${PACKAGE}"
           after="$(nix eval --raw ".#${PACKAGE}.version")"
           echo "before=${before}" >> "$GITHUB_OUTPUT"
           echo "after=${after}" >> "$GITHUB_OUTPUT"
@@ -55,7 +55,7 @@ jobs:
 
       - name: Create pull request
         if: steps.update.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7.0.11
         with:
           branch: deps/nix-update-${{ matrix.package }}
           delete-branch: true

@@ -14,12 +14,17 @@ updates:
     directory: /nix/omnigent
     schedule:
       interval: weekly
+    # リリース直後の版（乗っ取られた版の可能性）をすぐ取り込まないよう、公開から 7 日待つ。
+    cooldown:
+      default-days: 7
 
-  # workflow で使っている Actions（actions/checkout など）。
+  # workflow で使っている Actions。SHA で固定し、コメントの版番号ごと Dependabot が更新する。
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       github-actions:
         patterns: ["*"]
