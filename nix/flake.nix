@@ -25,7 +25,7 @@
 
   outputs = { self, nixpkgs, pyproject-nix, uv2nix, pyproject-build-systems, ... }:
     let
-      systems = [ "aarch64-darwin" "x86_64-darwin" "x86_64-linux" "aarch64-linux" ];
+      systems = [ "aarch64-darwin" "x86_64-linux" "aarch64-linux" ];
       forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f system);
       omnigentWorkspace = uv2nix.lib.workspace.loadWorkspace {
         workspaceRoot = ./omnigent;
