@@ -82,6 +82,3 @@ case ":${PATH}:" in
     *:"$HOME/.local/bin":*) ;;
     *) export PATH="$PATH:$HOME/.local/bin" ;;
 esac
-
-# GPG 署名コミットでパスフレーズ入力をこの端末に向ける
-export GPG_TTY=$(tty)
