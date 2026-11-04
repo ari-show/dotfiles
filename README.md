@@ -135,6 +135,14 @@ ${EDITOR:-vi} ~/.config/nix/nix.conf
 このリポジトリでは、`make` / `perl` / `uv` / `gh` / `tmux` / `ghtkn` / Omnigent などのセットアップや日常作業に必要な CLI ツールを `dotfiles-tools` として定義しています。
 macOS で `brew install <cli>` していたものは、原則として `dotfiles-tools` に追加して Nix 側で管理します（GUI アプリは Homebrew cask のまま）。
 
+`dotfiles-tools` の中身は環境によって変わります。`nix/flake.nix` で次のどれに追加するかを選んでください。
+
+| リスト | 入る環境 | 例 |
+| --- | --- | --- |
+| `commonTools` | Mac / Linux サーバーの両方 | `gh`, `tmux`, `uv` |
+| `darwinTools` | Mac のみ | 手元の作業でだけ使う CLI |
+| `linuxTools` | Linux サーバーのみ | サーバー運用でだけ使う CLI |
+
 `dotfiles-tools` を Nix profile に追加すると、通常の shell からこれらのコマンドを使えるようになります。
 
 ```bash
