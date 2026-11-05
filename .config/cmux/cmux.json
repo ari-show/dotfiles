@@ -1,6 +1,14 @@
 {
   "$schema": "https://raw.githubusercontent.com/manaflow-ai/cmux/main/web/data/cmux.schema.json",
   "schemaVersion": 1,
+  "commands": [
+    {
+      "name": "Open Git worktree in split",
+      "description": "Choose an existing Git worktree for a new pane",
+      "keywords": ["git", "worktree", "split", "pane"],
+      "command": "bash \"${DOTFILES:-$HOME/dotfiles}/scripts/cmux-worktree\""
+    }
+  ],
   "shortcuts": {
     "bindings": {
       "focusHistoryBack": null,

@@ -73,6 +73,22 @@ make cmux
 `.cmux/cmux.json` で管理します。Raycast では Script Commands のディレクトリに
 `~/dotfiles/scripts/raycast` を登録すると「Open cmux」を使えます。
 
+#### 既存の Git worktree を別ペインで開く
+
+Git リポジトリ内の cmux ターミナルで、コマンドパレットから
+「Open Git worktree in split」を選び、一覧の番号を入力します。
+選択した worktree を右側の新しいペインで開きます。空入力でキャンセルできます。
+上下左右を指定したい場合は、次のように直接実行します。
+
+```bash
+bash "${DOTFILES:-$HOME/dotfiles}/scripts/cmux-worktree" down
+```
+
+同じ worktree を複数ペインから開くこともできます。その場合はファイルとブランチを共有します。
+別々の変更を並行して隔離するには、あらかじめ別ブランチの worktree を作成してください。
+この操作では worktree やブランチの作成・削除は行いません。通常のペイン分割も変更しません。
+設定の反映には `make cmux` の後に `cmux reload-config` を実行してください。
+
 cmux の版と SHA-256 は `nix/cmux-source.json` で固定しています。
 `Update pinned Nix packages` workflow が毎週月曜に公式の最新安定版を確認し、Apple Silicon macOS で
 ビルドと CLI を検証してから更新 PR を作ります。Actions に PR 作成が許可されている必要があります。
