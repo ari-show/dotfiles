@@ -7,8 +7,8 @@
       "focusHistoryForward": null,
       "browserBack": null,
       "browserForward": null,
-      "focusRight": "cmd+[",
-      "focusLeft": "cmd+]"
+      "focusLeft": "cmd+[",
+      "focusRight": "cmd+]"
     }
   }
 }
