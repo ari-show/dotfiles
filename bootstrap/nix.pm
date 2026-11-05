@@ -4,6 +4,7 @@ use feature 'say';
 
 use File::Copy qw(move);
 use File::Path qw(make_path);
+use File::Spec;
 use File::Basename qw(dirname);
 use Cwd qw(abs_path);
 use Time::Piece;
@@ -16,7 +17,9 @@ my $dotfiles_dir = abs_path($ENV{DOTFILES} // "$script_dir/..")
 
 # ~/.config/nix は実ディレクトリとして残し、nix.conf だけを管理対象にする。
 my $src_file   = abs_path("$dotfiles_dir/.config/nix/nix.conf");
-my $dest_dir   = "$home_dir/.config/nix";
+my $xdg_config = $ENV{XDG_CONFIG_HOME} // '';
+$xdg_config = "$home_dir/.config" unless File::Spec->file_name_is_absolute($xdg_config);
+my $dest_dir   = "$xdg_config/nix";
 my $dest_file  = "$dest_dir/nix.conf";
 my $backup_dir = "$dotfiles_dir/back-up/" . localtime->strftime('%Y%m%d_%H%M%S');
 

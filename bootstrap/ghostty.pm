@@ -4,6 +4,7 @@ use feature 'say';
 
 use File::Copy qw(move);
 use File::Path qw(make_path);
+use File::Spec;
 use File::Basename qw(dirname);
 use Cwd qw(abs_path);
 use Time::Piece;
@@ -19,7 +20,9 @@ my $dotfiles_dir = abs_path($ENV{DOTFILES} // "$script_dir/..")
 # Ghostty はテーマ等を ~/.config/ghostty 配下に追加する可能性があるため、
 # config だけをファイル単位でリンクする（親ディレクトリは実体のまま残す）。
 my $src_file   = abs_path("$dotfiles_dir/.config/ghostty/config");
-my $dest_dir   = "$home_dir/.config/ghostty";
+my $xdg_config = $ENV{XDG_CONFIG_HOME} // '';
+$xdg_config = "$home_dir/.config" unless File::Spec->file_name_is_absolute($xdg_config);
+my $dest_dir   = "$xdg_config/ghostty";
 my $dest_file  = "$dest_dir/config";
 my $backup_dir = "$dotfiles_dir/back-up/" . localtime->strftime('%Y%m%d_%H%M%S');
 
