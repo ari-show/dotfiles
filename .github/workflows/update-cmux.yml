@@ -1,0 +1,51 @@
+name: Update cmux
+
+on:
+  schedule:
+    - cron: '0 0 * * 1' # Monday 09:00 JST
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: update-cmux
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Nix
+        uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b # v31.11.3
+      - name: Check latest stable release
+        id: update
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/update-cmux
+      - name: Build and smoke test on Apple Silicon
+        if: steps.update.outputs.changed == 'true'
+        run: |
+          nix build ./nix#cmux --out-link "$RUNNER_TEMP/cmux"
+          "$RUNNER_TEMP/cmux/bin/cmux" --version
+          "$RUNNER_TEMP/cmux/bin/cmux" config validate --path .config/cmux/cmux.json
+      - name: Create pull request
+        if: steps.update.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          branch: deps/update-cmux
+          delete-branch: true
+          sign-commits: true
+          add-paths: nix/cmux-source.json
+          commit-message: 'chore(cmux): update to ${{ steps.update.outputs.after }}'
+          title: 'chore(cmux): update to ${{ steps.update.outputs.after }}'
+          body: |
+            cmux を ${{ steps.update.outputs.before }} から ${{ steps.update.outputs.after }} に更新します。
+
+            - [リリースノート](https://github.com/manaflow-ai/cmux/releases/tag/v${{ steps.update.outputs.after }})
+            - Apple Silicon macOS で Nix ビルドと CLI の起動・設定構文を確認済みです。
+            - マージ後、`git pull` と `make nix-sync` で手元に反映してください。
+          labels: dependencies

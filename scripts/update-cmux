@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+"""Update the pinned cmux release from GitHub's latest stable release metadata."""
+import base64
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
+
+SOURCE = Path(__file__).resolve().parent.parent / "nix" / "cmux-source.json"
+ASSET = "cmux-macos-arm64.dmg"
+
+
+def version_tuple(version):
+    if not re.fullmatch(r"[0-9]+(?:\.[0-9]+){1,3}", version):
+        raise ValueError(f"unsupported release version: {version!r}")
+    return tuple(int(part) for part in version.split("."))
+
+
+def main():
+    current = json.loads(SOURCE.read_text())
+    release = json.loads(subprocess.check_output(
+        ["gh", "api", "repos/manaflow-ai/cmux/releases/latest"], text=True
+    ))
+    tag = release["tag_name"]
+    if not tag.startswith("v"):
+        raise ValueError(f"unexpected tag: {tag!r}")
+    version = tag[1:]
+    if version_tuple(version) < version_tuple(current["version"]):
+        raise ValueError(f"refusing to downgrade {current['version']} to {version}")
+    assets = [asset for asset in release["assets"] if asset["name"] == ASSET and asset["state"] == "uploaded"]
+    if len(assets) != 1:
+        raise ValueError(f"expected exactly one uploaded {ASSET}")
+    digest = assets[0].get("digest") or ""
+    if not re.fullmatch(r"sha256:[0-9a-f]{64}", digest):
+        raise ValueError(f"missing or invalid SHA-256 digest for {ASSET}")
+    sha = "sha256-" + base64.b64encode(bytes.fromhex(digest[7:])).decode("ascii")
+    updated = {"version": version, "hash": sha}
+    if version == current["version"] and sha != current["hash"]:
+        raise ValueError("release asset digest changed for an existing version; investigate manually")
+    changed = updated != current
+    if changed:
+        SOURCE.write_text(json.dumps(updated, indent=2) + "\n")
+    print(f"cmux: {current['version']} -> {version}" if changed else f"cmux {version} is up to date")
+    if output := os.environ.get("GITHUB_OUTPUT"):
+        with open(output, "a") as stream:
+            stream.write(f"changed={'true' if changed else 'false'}\nbefore={current['version']}\nafter={version}\n")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (KeyError, ValueError, subprocess.CalledProcessError) as exc:
+        print(f"cmux update failed: {exc}", file=sys.stderr)
+        sys.exit(1)
