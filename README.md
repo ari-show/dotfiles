@@ -7,6 +7,7 @@ Nix + make + perl でセットアップを自動化している。
 
 - [構成](#構成)
 - [セットアップ方法](#セットアップ方法)
+- [更新を手元に反映する](#更新を手元に反映する)
 - [セットアップ方式の使い分け](#セットアップ方式の使い分け)
 - [補足: dotfiles-tools の取得方法について](#補足-dotfiles-tools-の取得方法について)
 - [ドキュメント](#ドキュメント)
@@ -321,6 +322,16 @@ nix profile add "github:ShotaArima/dotfiles?dir=nix#dotfiles-tools" --no-write-l
 ```bash
 nix profile upgrade nix --refresh
 ```
+
+## 更新を手元に反映する
+
+```bash
+git pull
+make setup     # 設定ファイルのリンク
+make nix-sync  # Nix のツールを入れ直す
+```
+
+うまく動かなくなったら `make rollback` で Nix のツールを 1 つ前に戻せます。
 
 ## セットアップ方式の使い分け
 

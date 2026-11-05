@@ -51,6 +51,7 @@ $ git push
 $ cd ~/dotfiles
 $ git pull
 $ make setup
+$ make nix-sync   # Nix のツールを入れ直す
 ```
 
 - これで最新設定が適用される。
