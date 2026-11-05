@@ -3,6 +3,38 @@
   "schemaVersion": 1,
   "commands": [
     {
+      "name": "Open dotfiles workspace",
+      "description": "Open terminals and GitHub side by side",
+      "keywords": ["dotfiles", "workspace", "layout"],
+      "restart": "ignore",
+      "workspace": {
+        "name": "dotfiles",
+        "cwd": ".",
+        "color": "#8caaee",
+        "layout": {
+          "direction": "horizontal",
+          "split": 0.6,
+          "children": [
+            {
+              "pane": {
+                "surfaces": [
+                  { "type": "terminal", "name": "Work", "focus": true },
+                  { "type": "terminal", "name": "Shell" }
+                ]
+              }
+            },
+            {
+              "pane": {
+                "surfaces": [
+                  { "type": "browser", "name": "GitHub", "url": "https://github.com/ShotaArima/dotfiles" }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
       "name": "Check dotfiles",
       "description": "Run the dotfiles checks",
       "command": "cd \"$(git rev-parse --show-toplevel)\" && make check"

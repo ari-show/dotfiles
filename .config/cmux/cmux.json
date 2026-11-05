@@ -1,4 +1,14 @@
 {
   "$schema": "https://raw.githubusercontent.com/manaflow-ai/cmux/main/web/data/cmux.schema.json",
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "shortcuts": {
+    "bindings": {
+      "focusHistoryBack": null,
+      "focusHistoryForward": null,
+      "browserBack": null,
+      "browserForward": null,
+      "focusRight": "cmd+[",
+      "focusLeft": "cmd+]"
+    }
+  }
 }
