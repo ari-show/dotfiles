@@ -1,4 +1,4 @@
-setup: os wezterm herdr ghostty nix ghtkn
+setup: os wezterm herdr ghostty nix ghtkn cmux
 
 .PHONY: help setup mac uv-check
 os:bootstrap/setup.pm
@@ -19,10 +19,13 @@ nix:bootstrap/nix.pm
 ghtkn:bootstrap/ghtkn.pm
 	perl bootstrap/ghtkn.pm
 
+cmux:bootstrap/cmux.pm
+	perl bootstrap/cmux.pm
+
 mac: os
 linux: os
 
-.PHONY: help setup os wezterm herdr ghostty nix ghtkn nix-repair nix-update nix-sync mac linux \
+.PHONY: help setup os wezterm herdr ghostty nix ghtkn cmux nix-repair nix-update nix-sync mac linux \
 	check lint lint-workflows fmt fmt-check build rollback outdated
 
 help:
@@ -34,6 +37,7 @@ help:
 	@echo "  make ghostty  # Link Ghostty config (~/.config/ghostty/config)"
 	@echo "  make nix      # Link Nix config (~/.config/nix/nix.conf)"
 	@echo "  make ghtkn    # Link ghtkn config (~/.config/ghtkn/ghtkn.yaml)"
+	@echo "  make cmux     # Link cmux config and the Nix app (Apple Silicon macOS)"
 	@echo "  make nix-repair # Repair /nix mount after macOS upgrade (needs sudo)"
 	@echo "  make nix-update # Update nix/flake.lock, build, and upgrade the profile (primary Mac)"
 	@echo "  make nix-sync   # Reinstall dotfiles-tools from the committed lock (other Macs)"
