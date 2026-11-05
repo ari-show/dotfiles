@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - runner: ubuntu-latest
+          - runner: ubuntu-26.04
             system: x86_64-linux
           - runner: macos-14
             system: aarch64-darwin
