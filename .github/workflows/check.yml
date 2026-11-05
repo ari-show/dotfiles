@@ -1,5 +1,6 @@
-# 毎 push で `make check` を実行する。手元の `make check` と同じ内容
+# 毎 push で Ubuntu 上で `make check` を実行する。手元の `make check` と同じ内容
 # （bootstrap/*.pm の構文チェック、nixfmt の整形チェック、全 system の評価、dotfiles-tools のビルド）。
+# macOS での実行は check-macos.yml（Nix 関連の変更があるときだけ動く）。
 name: Check
 
 on:
@@ -19,11 +20,7 @@ concurrency:
 
 jobs:
   check:
-    strategy:
-      fail-fast: false
-      matrix:
-        runner: [ubuntu-latest, macos-14]
-    runs-on: ${{ matrix.runner }}
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
