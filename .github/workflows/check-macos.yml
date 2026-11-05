@@ -1,0 +1,51 @@
+# macOS（aarch64-darwin）で `make check` を実行する。
+# macOS の runner は遅いので、macOS でのビルド結果が変わりうるファイルを変えたときだけ動かす。
+# Perl の構文チェックや全 system の評価は Ubuntu 側（check.yml）でも毎回行っている。
+name: Check (macOS)
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "nix/**"
+      - "makefile"
+      - ".github/workflows/check-macos.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  # cache-nix-action が古いキャッシュを削除（purge）するために必要。
+  actions: write
+
+# 同じブランチに続けて push したら古い実行は止める。
+concurrency:
+  group: check-macos-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b # v31.11.3
+
+      # /nix/store をキャッシュして、omnigent の Python 依存などを毎回ビルドし直さないようにする。
+      # キーは flake / omnigent の依存が変わったときだけ変わる。
+      - name: Restore and save Nix store
+        uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569 # v7
+        with:
+          primary-key: nix-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('nix/**/*.nix', 'nix/flake.lock', 'nix/omnigent/pyproject.toml', 'nix/omnigent/uv.lock') }}
+          # 完全一致がなければ、同じ OS の直近のキャッシュから差分だけビルドする。
+          restore-prefixes-first-match: nix-${{ runner.os }}-${{ runner.arch }}-
+          # 同じブランチの古いキャッシュは、新しいキャッシュを保存したら削除する（10GB 上限対策）。
+          purge: true
+          purge-prefixes: nix-${{ runner.os }}-${{ runner.arch }}-
+          purge-created: 0
+          purge-primary-key: never
+
+      - name: make check
+        run: make check
