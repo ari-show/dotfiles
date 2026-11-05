@@ -17,6 +17,3 @@ fi
 if [ -d "/Applications/MATLAB_R2025b.app/bin" ]; then
   export PATH="$PATH:/Applications/MATLAB_R2025b.app/bin"
 fi
-
-# Added by Obsidian
-export PATH="$PATH:/Applications/Obsidian.app/Contents/MacOS"
