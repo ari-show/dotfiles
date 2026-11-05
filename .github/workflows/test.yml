@@ -27,6 +27,9 @@ jobs:
       - name: Perl syntax check
         run: perl -c bootstrap/mac_zsh.pm
 
+      - name: Test XDG configuration paths
+        run: bash scripts/test-xdg-config.sh
+
       - name: Integration test
         shell: bash
         run: |
