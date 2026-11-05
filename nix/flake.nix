@@ -122,8 +122,15 @@
             ghtkn
             omnigent
           ];
-          # cmux の CLI はアプリ本体ではなく Resources/bin に同梱される。
+          # nixpkgs の更新を待たずに公式リリースを固定する。
+          cmuxSource = builtins.fromJSON (builtins.readFile ./cmux-source.json);
           cmux = pkgs.cmux.overrideAttrs (old: {
+            version = cmuxSource.version;
+            src = pkgs.fetchurl {
+              url = "https://github.com/manaflow-ai/cmux/releases/download/v${cmuxSource.version}/cmux-macos-arm64.dmg";
+              hash = cmuxSource.hash;
+            };
+            # CLI はアプリ本体ではなく Resources/bin に同梱される。
             postInstall = (old.postInstall or "") + ''
               rm "$out/bin/cmux"
               makeBinaryWrapper "$out/Applications/cmux.app/Contents/Resources/bin/cmux" "$out/bin/cmux"
@@ -146,6 +153,7 @@
           dotfiles-tools = dotfilesTools;
           default = dotfilesTools;
         }
+        // pkgs.lib.optionalAttrs (system == "aarch64-darwin") { inherit cmux; }
       );
 
       # `make fmt` / `make fmt-check` が使う整形ツール。checks.formatting と同じ版を使う。
