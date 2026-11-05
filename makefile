@@ -23,7 +23,7 @@ mac: os
 linux: os
 
 .PHONY: help setup os wezterm herdr ghostty nix ghtkn nix-repair nix-update nix-sync mac linux \
-	check lint fmt fmt-check build rollback outdated
+	check lint lint-workflows fmt fmt-check build rollback outdated
 
 help:
 	@echo "Available targets:"
@@ -38,7 +38,8 @@ help:
 	@echo "  make nix-update # Update nix/flake.lock, build, and upgrade the profile (primary Mac)"
 	@echo "  make nix-sync   # Reinstall dotfiles-tools from the committed lock (other Macs)"
 	@echo "  make check      # Run everything CI runs (lint + nix flake check)"
-	@echo "  make lint       # Perl syntax check of bootstrap/*.pm"
+	@echo "  make lint       # Perl syntax check of bootstrap/*.pm (+ lint-workflows)"
+	@echo "  make lint-workflows # Fail if a workflow uses a *-latest runner label"
 	@echo "  make fmt        # Format nix/**/*.nix with nixfmt"
 	@echo "  make fmt-check  # Fail if any nix/**/*.nix is not formatted"
 	@echo "  make build      # Build dotfiles-tools without touching the profile"
@@ -76,8 +77,15 @@ check: lint
 	nix flake check ./nix --all-systems --no-build
 	nix flake check ./nix -L
 
-lint:
+lint: lint-workflows
 	@for f in bootstrap/*.pm; do perl -c "$$f" || exit 1; done
+
+# runner は `ubuntu-26.04` のように版を固定する。`*-latest` は OS が知らないうちに上がるため禁止。
+lint-workflows:
+	@if grep -rnE '(ubuntu|macos|windows)-latest' .github/workflows; then \
+		echo 'error: runs-on に *-latest は使わず、ubuntu-26.04 のように版を固定してください' >&2; \
+		exit 1; \
+	fi
 
 fmt:
 	cd nix && $(NIX_FILES_CMD) -print0 | xargs -0 nix fmt --
