@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+direction="${1:-right}"
+case "$direction" in
+  left|right|up|down) ;;
+  *) echo "Usage: bash cmux-worktree [left|right|up|down]" >&2; exit 2 ;;
+esac
+
+if [[ -z "${CMUX_WORKSPACE_ID:-}" || -z "${CMUX_SURFACE_ID:-}" ]]; then
+  echo 'Run this command from a cmux terminal.' >&2
+  exit 1
+fi
+if ! git rev-parse --git-dir >/dev/null 2>&1; then
+  echo 'Run this command inside a Git repository.' >&2
+  exit 1
+fi
+
+paths=()
+labels=()
+path='' branch='' unavailable=''
+while IFS= read -r -d '' field; do
+  case "$field" in
+    'worktree '*) path="${field#worktree }"; branch='(detached HEAD)'; unavailable='' ;;
+    'branch '*) branch="${field#branch refs/heads/}" ;;
+    bare|prunable*) unavailable=1 ;;
+    '')
+      if [[ -z "$unavailable" && -d "$path" ]]; then
+        paths+=("$path")
+        labels+=("$branch — $path")
+      fi
+      ;;
+  esac
+done < <(git worktree list --porcelain -z)
+
+if (( ${#paths[@]} == 0 )); then
+  echo 'No available worktrees found.' >&2
+  exit 1
+fi
+
+echo 'Choose a worktree (empty input cancels):'
+for ((i=0; i<${#paths[@]}; i++)); do
+  printf '  %d) %s\n' "$((i + 1))" "${labels[i]}"
+done
+printf '> '
+IFS= read -r choice || exit 0
+[[ -n "$choice" ]] || exit 0
+if [[ ! "$choice" =~ ^[1-9][0-9]*$ ]] || (( choice > ${#paths[@]} )); then
+  echo 'Invalid selection.' >&2
+  exit 1
+fi
+
+# %q protects whitespace and shell metacharacters in the path.
+printf -v quoted_path '%q' "${paths[choice-1]}"
+cmux new-split "$direction" --focus true --command "cd -- $quoted_path"
