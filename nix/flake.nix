@@ -80,7 +80,7 @@
               pkgs.nodejs_22
               pkgs.tmux
             ]
-            ++ pkgs.lib.optionals pkgs.stdenv.isLinux [ pkgs.bubblewrap ];
+            ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [ pkgs.bubblewrap ];
             meta = {
               description = "Omnigent CLI with the Databricks and Modal integrations";
               homepage = "https://omnigent.ai";
@@ -110,19 +110,28 @@
               mainProgram = "ghtkn";
             };
           };
+          # 全環境（Mac / Linux サーバー）で使う CLI。
+          commonTools = [
+            pkgs.uv
+            pkgs.gnumake
+            pkgs.perl
+            pkgs.gh
+            pkgs.tmux
+            pkgs.tree
+            pkgs.poppler-utils
+            ghtkn
+            omnigent
+          ];
+          # Mac（手元の作業マシン）でのみ使う CLI。GUI アプリは Homebrew cask で管理する。
+          darwinTools = [ ];
+          # Linux（サーバー）でのみ使う CLI。
+          linuxTools = [ ];
           dotfilesTools = pkgs.buildEnv {
             name = "dotfiles-tools";
-            paths = [
-              pkgs.uv
-              pkgs.gnumake
-              pkgs.perl
-              pkgs.gh
-              pkgs.tmux
-              pkgs.tree
-              pkgs.poppler-utils
-              ghtkn
-              omnigent
-            ];
+            paths =
+              commonTools
+              ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isDarwin darwinTools
+              ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux linuxTools;
           };
         in
         {
