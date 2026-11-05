@@ -89,15 +89,15 @@
           };
           ghtkn = (pkgs.buildGoModule.override { go = pkgs.go_1_27; }) rec {
             pname = "ghtkn";
-            version = "0.4.1";
+            version = "0.4.3";
             src = pkgs.fetchFromGitHub {
               owner = "suzuki-shunsuke";
               repo = "ghtkn";
               rev = "v${version}";
-              hash = "sha256-EtILxa6d6kmsd/6DykGqfokc3rrsXzf7ciettCkgo5E=";
+              hash = "sha256-G4oM14ErcRp3c0V9fN1XK/kIwPFepZQdLxwDzt3+J7E=";
             };
             subPackages = [ "cmd/ghtkn" ];
-            vendorHash = "sha256-oA9US4CoGZrkhyVCiDooV5PkTV9akDUtcSqguc+4sEk=";
+            vendorHash = "sha256-AGoHsstyvCxe0i2xzwdTLvWGtl2x6z0gn6aQlbA4KBA=";
             ldflags = [
               "-s"
               "-w"
@@ -122,8 +122,15 @@
             ghtkn
             omnigent
           ];
-          # Mac（手元の作業マシン）でのみ使う CLI。GUI アプリは Homebrew cask で管理する。
-          darwinTools = [ ];
+          # cmux の CLI はアプリ本体ではなく Resources/bin に同梱される。
+          cmux = pkgs.cmux.overrideAttrs (old: {
+            postInstall = (old.postInstall or "") + ''
+              rm "$out/bin/cmux"
+              makeBinaryWrapper "$out/Applications/cmux.app/Contents/Resources/bin/cmux" "$out/bin/cmux"
+            '';
+          });
+          # cmux は Apple Silicon Mac 専用。Linux の profile には含めない。
+          darwinTools = pkgs.lib.optionals (system == "aarch64-darwin") [ cmux ];
           # Linux（サーバー）でのみ使う CLI。
           linuxTools = [ ];
           dotfilesTools = pkgs.buildEnv {

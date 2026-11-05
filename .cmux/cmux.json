@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/manaflow-ai/cmux/main/web/data/cmux.schema.json",
+  "schemaVersion": 1,
+  "commands": [
+    {
+      "name": "Check dotfiles",
+      "description": "Run the dotfiles checks",
+      "command": "cd \"$(git rev-parse --show-toplevel)\" && make check"
+    }
+  ]
+}

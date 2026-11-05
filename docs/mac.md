@@ -58,6 +58,24 @@ $ make nix-sync   # Nix のツールを入れ直す
 
 ## 3. Nix 管理のツール（uv など）を更新する
 
+### cmux（Apple Silicon Mac）
+
+cmux は `dotfiles-tools` に含まれます。Nix プロファイルの更新後に次を実行すると、
+設定と `~/Applications/cmux.app` がリンクされます。
+
+```bash
+make nix-sync
+make cmux
+```
+
+既存の同名ファイルは `back-up/` に退避します。cmux は Ghostty の表示設定も読みます。
+アプリ全体の設定は `.config/cmux/cmux.json`、このリポジトリ専用のコマンドは
+`.cmux/cmux.json` で管理します。Raycast では Script Commands のディレクトリに
+`~/dotfiles/scripts/raycast` を登録すると「Open cmux」を使えます。
+
+ghtkn v0.4.0 以降は `ghtkn get` から device flow が自動起動しないため、
+cmux 向けの gh ラッパーは不要です。認証が必要な場合は手動で `ghtkn auth` を実行します。
+
 `uv` / `gh` / `tmux` / `ghtkn` / `omnigent` などは `nix/flake.nix` の `dotfiles-tools` として
 `nix profile`（entry 名 `nix`）に入っています。実体は読み取り専用の `/nix/store` にあるため、
 `uv self update` のようなツール自身の自己更新は使えません。版はすべて Nix 側で管理します。
