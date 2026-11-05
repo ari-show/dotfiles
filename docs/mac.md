@@ -74,7 +74,7 @@ make cmux
 `~/dotfiles/scripts/raycast` を登録すると「Open cmux」を使えます。
 
 cmux の版と SHA-256 は `nix/cmux-source.json` で固定しています。
-`Update cmux` workflow が毎週月曜に公式の最新安定版を確認し、Apple Silicon macOS で
+`Update pinned Nix packages` workflow が毎週月曜に公式の最新安定版を確認し、Apple Silicon macOS で
 ビルドと CLI を検証してから更新 PR を作ります。Actions に PR 作成が許可されている必要があります。
 `GITHUB_TOKEN` による PR では通常の push CI が自動実行されないため、必要に応じて手動実行します。
 
