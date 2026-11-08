@@ -1,1 +1,1 @@
-cask "ghostty"
+# Homebrew で管理するアプリを必要に応じて追加する。

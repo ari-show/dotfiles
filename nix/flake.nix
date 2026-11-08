@@ -141,8 +141,11 @@
               makeBinaryWrapper "$out/Applications/cmux.app/Contents/Resources/bin/cmux" "$out/bin/cmux"
             '';
           });
-          # cmux は Apple Silicon Mac 専用。Linux の profile には含めない。
-          darwinTools = pkgs.lib.optionals (system == "aarch64-darwin") [ cmux ];
+          # GUI アプリは Apple Silicon Mac 専用。Linux の profile には含めない。
+          darwinTools = pkgs.lib.optionals (system == "aarch64-darwin") [
+            cmux
+            pkgs.ghostty-bin
+          ];
           # Linux（サーバー）でのみ使う CLI。
           linuxTools = [ ];
           dotfilesTools = pkgs.buildEnv {
