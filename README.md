@@ -21,6 +21,7 @@ dotfiles/
 ├── .config/        # ~/.config 配下にリンクする設定（wezterm / ghostty / herdr / nix）
 ├── docs/           # 各種ドキュメント（docs/README.md が入り口）
 ├── nix/            # flake.nix（dotfiles-tools の定義）
+├── Brewfile        # macOS の任意の GUI アプリ（Homebrew）
 ├── makefile        # セットアップ用ターゲット（make help で一覧）
 ├── nix-install.sh  # Nix のインストールスクリプト
 └── nix-repair.sh   # macOS アップグレード後の /nix 修復スクリプト
@@ -49,6 +50,17 @@ SSH 鍵を未設定の場合は HTTPS でも clone できます。
 git clone https://github.com/ShotaArima/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 ```
+
+macOS で Homebrew を利用する場合、任意で次のコマンドを実行すると、
+`Brewfile` に記載した GUI アプリ（現在は Ghostty）をインストールできます。
+
+```bash
+brew bundle --file=./Brewfile
+```
+
+この操作には Homebrew が必要です。既存の Ghostty 個別インストール手順
+（[Ghostty のセットアップ](./docs/ghostty/installing/README.md)）も利用できます。
+`make setup` は設定のリンクを行い、Homebrew アプリのインストールは実行しません。
 
 ---
 
