@@ -21,6 +21,7 @@ dotfiles/
 ├── .config/        # ~/.config 配下にリンクする設定（wezterm / ghostty / herdr / nix）
 ├── docs/           # 各種ドキュメント（docs/README.md が入り口）
 ├── nix/            # flake.nix（dotfiles-tools の定義）
+├── Brewfile        # macOS の任意の GUI アプリ（Homebrew）
 ├── makefile        # セットアップ用ターゲット（make help で一覧）
 ├── nix-install.sh  # Nix のインストールスクリプト
 └── nix-repair.sh   # macOS アップグレード後の /nix 修復スクリプト
@@ -49,6 +50,16 @@ SSH 鍵を未設定の場合は HTTPS でも clone できます。
 git clone https://github.com/ShotaArima/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 ```
+
+macOS で Homebrew を利用する場合、必要なアプリを `Brewfile` に追加し、
+任意で次のコマンドを実行してインストールできます。初期状態では項目はありません。
+
+```bash
+brew bundle --file=./Brewfile
+```
+
+この操作には Homebrew が必要です。Ghostty は Nix で管理します。
+`make setup` は設定のリンクを行い、Homebrew アプリのインストールは実行しません。
 
 ---
 
@@ -140,7 +151,7 @@ ${EDITOR:-vi} ~/.config/nix/nix.conf
 ### 3) dotfiles 用ツールを Nix profile に追加する
 
 このリポジトリでは、`make` / `perl` / `uv` / `gh` / `tmux` / `ghtkn` / Omnigent などのセットアップや日常作業に必要な CLI ツールを `dotfiles-tools` として定義しています。
-macOS で `brew install <cli>` していたものは、原則として `dotfiles-tools` に追加して Nix 側で管理します（GUI アプリは Homebrew cask のまま）。
+macOS の CLI と Ghostty は、`dotfiles-tools` に追加して Nix 側で管理します。その他の GUI アプリは必要に応じて Homebrew で管理できます。
 
 `dotfiles-tools` の中身は環境によって変わります。`nix/flake.nix` で次のどれに追加するかを選んでください。
 

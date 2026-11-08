@@ -2,13 +2,14 @@
 
 ## インストール
 
-macOS の場合は Homebrew でインストールする。
+Apple Silicon macOS では `dotfiles-tools` に Ghostty が含まれる。
+まず [Nix profile のセットアップ](../../../README.md#3-dotfiles-用ツールを-nix-profile-に追加する)を行い、以下でアプリを起動する。
 
 ```bash
-brew install --cask ghostty
+open ~/.nix-profile/Applications/Ghostty.app
 ```
 
-その他のインストール方法は [公式ドキュメント](https://ghostty.org/docs/install) を参照。
+その他の環境でのインストール方法は [公式ドキュメント](https://ghostty.org/docs/install) を参照。
 
 ## 設定ファイルのリンク
 
