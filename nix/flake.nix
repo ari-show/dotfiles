@@ -116,6 +116,11 @@
             pkgs.gnumake
             pkgs.perl
             pkgs.gh
+            pkgs.ripgrep
+            pkgs.fd
+            pkgs.jq
+            pkgs.asdf-vm
+            pkgs.sops
             pkgs.tmux
             pkgs.tree
             pkgs.poppler-utils
