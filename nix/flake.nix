@@ -50,7 +50,10 @@
       packages = forAllSystems (
         system:
         let
-          pkgs = import nixpkgs { inherit system; };
+          pkgs = import nixpkgs {
+            inherit system;
+            config.allowUnfreePredicate = pkg: nixpkgs.lib.getName pkg == "raycast";
+          };
           pythonSet =
             (pkgs.callPackage pyproject-nix.build.packages {
               python = pkgs.python312;
@@ -145,6 +148,7 @@
           darwinTools = pkgs.lib.optionals (system == "aarch64-darwin") [
             cmux
             pkgs.ghostty-bin
+            pkgs.raycast
           ];
           # Linux（サーバー）でのみ使う CLI。
           linuxTools = [ ];

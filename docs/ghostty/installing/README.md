@@ -13,6 +13,8 @@ Raycast から起動するには、Raycast の Settings → Script Commands → 
 `~/dotfiles/scripts/raycast` を追加する。登録後、Raycast で
 「Open Ghostty」を検索して実行できる。同じディレクトリを cmux 用に登録済みなら、
 再登録は不要。
+Raycast も Apple Silicon macOS の `dotfiles-tools` に含まれるため、
+`open ~/.nix-profile/Applications/Raycast.app` で起動できる。
 
 その他の環境でのインストール方法は [公式ドキュメント](https://ghostty.org/docs/install) を参照。
 
