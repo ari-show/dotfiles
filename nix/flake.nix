@@ -92,15 +92,15 @@
           };
           ghtkn = (pkgs.buildGoModule.override { go = pkgs.go_1_27; }) rec {
             pname = "ghtkn";
-            version = "0.4.3";
+            version = "4.0.1-0";
             src = pkgs.fetchFromGitHub {
               owner = "suzuki-shunsuke";
               repo = "ghtkn";
               rev = "v${version}";
-              hash = "sha256-G4oM14ErcRp3c0V9fN1XK/kIwPFepZQdLxwDzt3+J7E=";
+              hash = "sha256-rHpO7+4yN9RM87FF41OzwyVswYJ3dEYWb9wfj537AoY=";
             };
             subPackages = [ "cmd/ghtkn" ];
-            vendorHash = "sha256-AGoHsstyvCxe0i2xzwdTLvWGtl2x6z0gn6aQlbA4KBA=";
+            vendorHash = "sha256-01aumTd6UjZyfjP9lxNSuT9Cd600o1cmcqM31UwB0vw=";
             ldflags = [
               "-s"
               "-w"
