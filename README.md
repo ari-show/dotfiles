@@ -260,6 +260,49 @@ ghtkn の設定だけを適用する場合は、次を実行します。
 make ghtkn
 ```
 
+#### Neovim / LazyVim と lazygit
+
+`dotfiles-tools` に Neovim と lazygit が含まれます。`make setup` または
+`make lazyvim` で LazyVim の設定を `~/.config/lazyvim` にリンクし、次で起動します。
+
+```bash
+NVIM_APPNAME=lazyvim nvim
+lazygit
+```
+
+LazyVim は初回起動時にプラグインをダウンロードします。起動後に `:LazyHealth` で
+環境を確認できます。Vim は引き続き `.vimrc`、通常の `nvim` は既存の Neovim 設定を
+使います。`XDG_CONFIG_HOME` が絶対パスならリンク先もその配下です。既存の
+`lazyvim` ディレクトリは上書きせず、セットアップがエラーで停止します。
+設定は [LazyVim Starter](https://github.com/LazyVim/starter) の
+`803bc181d7c0d6d5eeba9274d9be49b287294d99` を基にしています。
+
+#### メニューバーと Oh My Zsh を試す
+
+macOS では Hidden Bar と SketchyBar も `dotfiles-tools` に含まれます。
+Hidden Bar は `open ~/.nix-profile/Applications/'Hidden Bar.app'` で起動できます。
+SketchyBar は、時計だけの最小設定を指定して手動起動できます。
+
+```bash
+sketchybar --config ~/dotfiles/.config/sketchybar/sketchybarrc
+```
+
+停止するには実行したターミナルで Ctrl-C を押します。詳細は
+[公式のセットアップ](https://felixkratz.github.io/SketchyBar/setup) を参照してください。
+
+Oh My Zsh はインストールのみで、現在の `.zshrc` は変更しません。別の zsh で試すには
+`zsh -f` を実行し、その中で次を入力します。終了は `exit` です。
+
+```zsh
+export ZSH="$HOME/.nix-profile/share/oh-my-zsh"
+ZSH_THEME=robbyrussell
+plugins=(git)
+source "$ZSH/oh-my-zsh.sh"
+```
+
+このシェルでは Oh My Zsh のテーマと git エイリアスが使われます。常用する場合は、
+現在のプロンプトと重複するエイリアスを見比べてから `.zshrc` に取り入れてください。
+
 #### ghtkn の認証
 
 ghtkn v0.4.0 以降は、device flow を開始するのは `ghtkn auth` だけです。`ghtkn get` / `ghtkn exec` / Git credential helper は device flow を自動では開始しないため、先に `ghtkn auth` で認証してから使います。

@@ -126,6 +126,12 @@
             pkgs.sops
             pkgs.tmux
             pkgs.tree
+            pkgs.neovim
+            pkgs.lazygit
+            pkgs.oh-my-zsh
+            pkgs.tree-sitter
+            pkgs.stylua
+            pkgs.shfmt
             pkgs.poppler-utils
             ghtkn
             omnigent
@@ -148,7 +154,9 @@
           darwinTools = pkgs.lib.optionals (system == "aarch64-darwin") [
             cmux
             pkgs.ghostty-bin
+            pkgs.hidden-bar
             pkgs.raycast
+            pkgs.sketchybar
           ];
           # Linux（サーバー）でのみ使う CLI。
           linuxTools = [ ];
