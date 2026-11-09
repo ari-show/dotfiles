@@ -20,7 +20,7 @@ my $os_key = lc($^O // '');
 my $os     = $os_map{$os_key}
   or die "Unsupported OS '$os_key'. Supported: darwin, linux\n";
 
-my @targets = qw(.zshrc .zprofile .bashrc .bash_profile .profile .gitconfig);
+my @targets = qw(.zshrc .zprofile .bashrc .bash_profile .profile .gitconfig .vimrc);
 
 say "[INFO] OS           = $os ($os_key)";
 say "[INFO] DOTFILES_DIR = $dotfiles_dir";

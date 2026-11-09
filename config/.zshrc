@@ -22,6 +22,7 @@ alias zshrc='vi ~/.zshrc'
 alias zprofile='vi ~/.zprofile'
 alias reloadzrc='source ~/.zshrc && echo ".zshrc reloaded!"'
 alias reloadzpro='source ~/.zprofile && echo ".zprofile reloaded!"'
+source "${${(%):-%x}:A:h}/dotfiles.zsh"
 
 # docker系
 alias d='docker'

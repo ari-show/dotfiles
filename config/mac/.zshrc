@@ -26,6 +26,7 @@ alias zshrc='vi ~/.zshrc'
 alias zprofile='vi ~/.zprofile'
 alias reloadzrc='source ~/.zshrc && echo ".zshrc reloaded!"'
 alias reloadzpro='source ~/.zprofile && echo ".zprofile reloaded!"'
+source "${${(%):-%x}:A:h:h}/dotfiles.zsh"
 
 # Obsidian系（カレントディレクトリを Vault として開く）
 alias obsd='open "obsidian://open?path=$(pwd)"'
