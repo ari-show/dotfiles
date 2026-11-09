@@ -234,6 +234,8 @@ source ~/.zprofile  # PATH などを現在の shell に反映（macOS）
 
 `make` は子プロセスとして実行されるため、`make setup` の中で `source ~/.zprofile` を実行しても、実行元の shell の環境には反映されません。macOS で `.zprofile` を更新した場合は、`make setup` の後に `source ~/.zprofile` を実行してください。新しいターミナルを開いても反映されます。
 
+zsh では `dotlink` でシェル設定の構文を確認してから `make os` でリンクを更新し、`.zprofile` と `.zshrc` を現在のシェルに読み込めます。既存ファイルは `make os` により `back-up/` に退避されます。`rz` は `.zshrc`、`rzp` は `.zprofile`、`rzz` は両方を構文確認して読み込みます。`make os` は `.vimrc` もリンクし、既存ファイルは退避します。
+
 `make setup` は Nix のユーザー設定もリンクします。
 
 ```text
