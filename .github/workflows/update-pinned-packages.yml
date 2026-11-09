@@ -36,7 +36,11 @@ jobs:
         run: |
           set -euo pipefail
           before="$(nix eval --raw ".#${PACKAGE}.version")"
-          nix run --inputs-from . nixpkgs#nix-update -- --flake "${PACKAGE}"
+          # タグではなく GitHub Releases を見て prerelease を除外し、正式版（vX.Y.Z）だけを対象にする。
+          # ghtkn には誤って打たれた prerelease タグ v4.0.1-0 があり、タグ基準だとそれを拾ってしまう。
+          nix run --inputs-from . nixpkgs#nix-update -- --flake "${PACKAGE}" \
+            --use-github-releases \
+            --version-regex '^v(\d+\.\d+\.\d+)$'
           after="$(nix eval --raw ".#${PACKAGE}.version")"
           echo "before=${before}" >> "$GITHUB_OUTPUT"
           echo "after=${after}" >> "$GITHUB_OUTPUT"
