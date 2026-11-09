@@ -1,0 +1,8 @@
+#!/bin/sh
+# 手動起動で試すための最小構成。元の macOS メニューバーは変更しない。
+sketchybar --bar height=30 color=0xee20242b \
+  --default icon.font='Helvetica:Regular:13.0' label.font='Helvetica:Regular:13.0' \
+  --add item clock right \
+  --set clock icon='' update_freq=30 \
+    script='sketchybar --set "$NAME" label="$(date "+%a %b %d %H:%M")"' \
+  --update
