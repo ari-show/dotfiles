@@ -1,0 +1,4 @@
+# Brewfile is a Homebrew DSL, not Ruby application source.
+# Exclude it from GitHub Linguist language detection so CodeQL default setup
+# does not enable Ruby analysis for this repository.
+Brewfile -linguist-detectable
