@@ -115,6 +115,7 @@
           };
           # 全環境（Mac / Linux サーバー）で使う CLI。
           commonTools = [
+            pkgs.codex
             pkgs.uv
             pkgs.gnumake
             pkgs.perl
