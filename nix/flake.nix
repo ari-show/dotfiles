@@ -114,7 +114,10 @@
             };
           };
           # nixpkgs の codex は Rust ソースからのビルドで、キャッシュが無いと CI で 1 時間近くかかる。
-          # 公式リリースのビルド済みバイナリを固定して使う（版と hash は codex-source.json）。
+          # 公式リリースのビルド済みパッケージを固定して使う（版と hash は codex-source.json）。
+          # codex は実行ファイルを実パスに解決し、bin/ の親にある codex-package.json を目印に
+          # bin/codex-code-mode-host・codex-exec-server や codex-resources/（Linux の bwrap など）、
+          # codex-path/rg を探す。そのためパッケージを libexec/codex にそのまま置き、bin/codex は symlink にする。
           codexSource = builtins.fromJSON (builtins.readFile ./codex-source.json);
           codexTarget =
             {
@@ -127,14 +130,19 @@
             pname = "codex";
             version = codexSource.version;
             src = pkgs.fetchurl {
-              url = "https://github.com/openai/codex/releases/download/rust-v${codexSource.version}/codex-${codexTarget}.tar.gz";
+              url = "https://github.com/openai/codex/releases/download/rust-v${codexSource.version}/codex-package-${codexTarget}.tar.gz";
               hash = codexSource.hashes.${system};
             };
             sourceRoot = ".";
             nativeBuildInputs = [ pkgs.installShellFiles ];
+            # 署名済みの公式バイナリと、digest を埋め込まれた bwrap をそのまま使う。
+            dontStrip = true;
+            dontPatchELF = true;
             installPhase = ''
               runHook preInstall
-              install -Dm755 "codex-${codexTarget}" "$out/bin/codex"
+              mkdir -p "$out/libexec/codex" "$out/bin"
+              cp -R codex-package.json bin codex-resources codex-path "$out/libexec/codex/"
+              ln -s "$out/libexec/codex/bin/codex" "$out/bin/codex"
               installShellCompletion --cmd codex \
                 --bash <("$out/bin/codex" completion bash) \
                 --fish <("$out/bin/codex" completion fish) \

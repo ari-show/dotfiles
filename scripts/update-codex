@@ -10,10 +10,11 @@ import sys
 
 SOURCE = Path(__file__).resolve().parent.parent / "nix" / "codex-source.json"
 # Nix の system -> リリースの asset 名。nix/flake.nix の codexTarget と揃える。
+# codex 単体ではなく、codex-code-mode-host などのヘルパーを含む公式パッケージを使う。
 ASSETS = {
-    "aarch64-darwin": "codex-aarch64-apple-darwin.tar.gz",
-    "x86_64-linux": "codex-x86_64-unknown-linux-musl.tar.gz",
-    "aarch64-linux": "codex-aarch64-unknown-linux-musl.tar.gz",
+    "aarch64-darwin": "codex-package-aarch64-apple-darwin.tar.gz",
+    "x86_64-linux": "codex-package-x86_64-unknown-linux-musl.tar.gz",
+    "aarch64-linux": "codex-package-aarch64-unknown-linux-musl.tar.gz",
 }
 
 
