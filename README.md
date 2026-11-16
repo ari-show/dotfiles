@@ -161,6 +161,8 @@ macOS の CLI と Ghostty は、`dotfiles-tools` に追加して Nix 側で管�
 | `darwinTools` | Mac のみ | 手元の作業でだけ使う CLI |
 | `linuxTools` | Linux サーバーのみ | サーバー運用でだけ使う CLI |
 
+`codex` は nixpkgs のソースビルドではなく、公式リリースのビルド済みバイナリを `nix/codex-source.json` で版と SHA-256 を固定して使います。`Update pinned Nix packages` workflow が毎週月曜に最新の安定版を確認し、更新 PR を作ります。
+
 `dotfiles-tools` を Nix profile に追加すると、通常の shell からこれらのコマンドを使えるようになります。
 
 ```bash
