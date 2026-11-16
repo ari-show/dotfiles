@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+"""Update the pinned Codex CLI release from GitHub's latest stable release metadata."""
+import base64
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
+
+SOURCE = Path(__file__).resolve().parent.parent / "nix" / "codex-source.json"
+# Nix の system -> リリースの asset 名。nix/flake.nix の codexTarget と揃える。
+ASSETS = {
+    "aarch64-darwin": "codex-aarch64-apple-darwin.tar.gz",
+    "x86_64-linux": "codex-x86_64-unknown-linux-musl.tar.gz",
+    "aarch64-linux": "codex-aarch64-unknown-linux-musl.tar.gz",
+}
+
+
+def version_tuple(version):
+    if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
+        raise ValueError(f"unsupported release version: {version!r}")
+    return tuple(int(part) for part in version.split("."))
+
+
+def asset_hash(release, name):
+    assets = [asset for asset in release["assets"] if asset["name"] == name and asset["state"] == "uploaded"]
+    if len(assets) != 1:
+        raise ValueError(f"expected exactly one uploaded {name}")
+    digest = assets[0].get("digest") or ""
+    if not re.fullmatch(r"sha256:[0-9a-f]{64}", digest):
+        raise ValueError(f"missing or invalid SHA-256 digest for {name}")
+    return "sha256-" + base64.b64encode(bytes.fromhex(digest[7:])).decode("ascii")
+
+
+def main():
+    current = json.loads(SOURCE.read_text())
+    # releases/latest は prerelease を返さない。
+    release = json.loads(subprocess.check_output(
+        ["gh", "api", "repos/openai/codex/releases/latest"], text=True
+    ))
+    tag = release["tag_name"]
+    if not tag.startswith("rust-v"):
+        raise ValueError(f"unexpected tag: {tag!r}")
+    version = tag[len("rust-v"):]
+    if version_tuple(version) < version_tuple(current["version"]):
+        raise ValueError(f"refusing to downgrade {current['version']} to {version}")
+    updated = {
+        "version": version,
+        "hashes": {system: asset_hash(release, name) for system, name in ASSETS.items()},
+    }
+    if version == current["version"] and updated["hashes"] != current["hashes"]:
+        raise ValueError("release asset digest changed for an existing version; investigate manually")
+    changed = updated != current
+    if changed:
+        SOURCE.write_text(json.dumps(updated, indent=2) + "\n")
+    print(f"codex: {current['version']} -> {version}" if changed else f"codex {version} is up to date")
+    if output := os.environ.get("GITHUB_OUTPUT"):
+        with open(output, "a") as stream:
+            stream.write(f"changed={'true' if changed else 'false'}\nbefore={current['version']}\nafter={version}\n")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (KeyError, ValueError, subprocess.CalledProcessError) as exc:
+        print(f"codex update failed: {exc}", file=sys.stderr)
+        sys.exit(1)

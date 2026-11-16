@@ -113,10 +113,40 @@
               mainProgram = "ghtkn";
             };
           };
-          # nixpkgs の cargoUseSystemLibs が aws-lc / zstd などのシステムライブラリ利用を強制するが、
-          # codex の定義が追従しておらずビルドに失敗するため、同梱ソースからのビルドに戻す。
-          # 上流で修正されたら削除する。
-          codex = pkgs.codex.overrideAttrs { dontCargoUseSystemLibs = true; };
+          # nixpkgs の codex は Rust ソースからのビルドで、キャッシュが無いと CI で 1 時間近くかかる。
+          # 公式リリースのビルド済みバイナリを固定して使う（版と hash は codex-source.json）。
+          codexSource = builtins.fromJSON (builtins.readFile ./codex-source.json);
+          codexTarget =
+            {
+              aarch64-darwin = "aarch64-apple-darwin";
+              x86_64-linux = "x86_64-unknown-linux-musl";
+              aarch64-linux = "aarch64-unknown-linux-musl";
+            }
+            .${system};
+          codex = pkgs.stdenvNoCC.mkDerivation {
+            pname = "codex";
+            version = codexSource.version;
+            src = pkgs.fetchurl {
+              url = "https://github.com/openai/codex/releases/download/rust-v${codexSource.version}/codex-${codexTarget}.tar.gz";
+              hash = codexSource.hashes.${system};
+            };
+            sourceRoot = ".";
+            nativeBuildInputs = [ pkgs.installShellFiles ];
+            installPhase = ''
+              runHook preInstall
+              install -Dm755 "codex-${codexTarget}" "$out/bin/codex"
+              installShellCompletion --cmd codex \
+                --bash <("$out/bin/codex" completion bash) \
+                --fish <("$out/bin/codex" completion fish) \
+                --zsh <("$out/bin/codex" completion zsh)
+              runHook postInstall
+            '';
+            meta = {
+              description = "Lightweight coding agent that runs in your terminal";
+              homepage = "https://github.com/openai/codex";
+              mainProgram = "codex";
+            };
+          };
           # 全環境（Mac / Linux サーバー）で使う CLI。
           commonTools = [
             codex
@@ -174,7 +204,7 @@
           };
         in
         {
-          inherit omnigent ghtkn;
+          inherit omnigent ghtkn codex;
           dotfiles-tools = dotfilesTools;
           default = dotfilesTools;
         }
