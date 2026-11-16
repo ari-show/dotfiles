@@ -150,14 +150,14 @@ ${EDITOR:-vi} ~/.config/nix/nix.conf
 ---
 ### 3) dotfiles 用ツールを Nix profile に追加する
 
-このリポジトリでは、`make` / `perl` / `uv` / `gh` / `tmux` / `ghtkn` / Omnigent などのセットアップや日常作業に必要な CLI ツールを `dotfiles-tools` として定義しています。
+このリポジトリでは、`make` / `perl` / `uv` / `gh` / `codex` / `tmux` / `ghtkn` / Omnigent などのセットアップや日常作業に必要な CLI ツールを `dotfiles-tools` として定義しています。
 macOS の CLI と Ghostty は、`dotfiles-tools` に追加して Nix 側で管理します。その他の GUI アプリは必要に応じて Homebrew で管理できます。
 
 `dotfiles-tools` の中身は環境によって変わります。`nix/flake.nix` で次のどれに追加するかを選んでください。
 
 | リスト | 入る環境 | 例 |
 | --- | --- | --- |
-| `commonTools` | Mac / Linux サーバーの両方 | `gh`, `tmux`, `uv` |
+| `commonTools` | Mac / Linux サーバーの両方 | `codex`, `gh`, `tmux`, `uv` |
 | `darwinTools` | Mac のみ | 手元の作業でだけ使う CLI |
 | `linuxTools` | Linux サーバーのみ | サーバー運用でだけ使う CLI |
 

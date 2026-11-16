@@ -94,6 +94,10 @@ cmux の版と SHA-256 は `nix/cmux-source.json` で固定しています。
 ビルドと CLI を検証してから更新 PR を作ります。Actions に PR 作成が許可されている必要があります。
 `GITHUB_TOKEN` による PR では通常の push CI が自動実行されないため、必要に応じて手動実行します。
 
+Raycast も同様に `nix/raycast-source.json` で版・DMG の URL・SHA-256 を固定しています。
+同じ workflow が Raycast 公式の最新版ダウンロード先を確認し、Apple Silicon macOS で
+ビルド・版番号・コード署名と公証を検証してから更新 PR を作ります。
+
 ghtkn v0.4.0 以降は `ghtkn get` から device flow が自動起動しないため、
 cmux 向けの gh ラッパーは不要です。認証が必要な場合は手動で `ghtkn auth` を実行します。
 

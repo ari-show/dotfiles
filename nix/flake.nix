@@ -115,6 +115,7 @@
           };
           # 全環境（Mac / Linux サーバー）で使う CLI。
           commonTools = [
+            pkgs.codex
             pkgs.uv
             pkgs.gnumake
             pkgs.perl
@@ -150,12 +151,21 @@
               makeBinaryWrapper "$out/Applications/cmux.app/Contents/Resources/bin/cmux" "$out/bin/cmux"
             '';
           });
+          # Raycast も nixpkgs の更新を待たずに公式の最新版を固定する。
+          raycastSource = builtins.fromJSON (builtins.readFile ./raycast-source.json);
+          raycast = pkgs.raycast.overrideAttrs {
+            version = raycastSource.version;
+            src = pkgs.fetchurl {
+              name = "Raycast.dmg";
+              inherit (raycastSource) url hash;
+            };
+          };
           # GUI アプリは Apple Silicon Mac 専用。Linux の profile には含めない。
           darwinTools = pkgs.lib.optionals (system == "aarch64-darwin") [
             cmux
             pkgs.ghostty-bin
             pkgs.hidden-bar
-            pkgs.raycast
+            raycast
             pkgs.sketchybar
           ];
           # Linux（サーバー）でのみ使う CLI。
@@ -173,7 +183,7 @@
           dotfiles-tools = dotfilesTools;
           default = dotfilesTools;
         }
-        // pkgs.lib.optionalAttrs (system == "aarch64-darwin") { inherit cmux; }
+        // pkgs.lib.optionalAttrs (system == "aarch64-darwin") { inherit cmux raycast; }
       );
 
       # `make fmt` / `make fmt-check` が使う整形ツール。checks.formatting と同じ版を使う。
