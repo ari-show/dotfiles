@@ -94,6 +94,8 @@ jobs:
         run: |
           nix build ./nix#codex --out-link "$RUNNER_TEMP/codex"
           "$RUNNER_TEMP/codex/bin/codex" --version
+          test -x "$RUNNER_TEMP/codex/libexec/codex/bin/codex-code-mode-host"
+          test -x "$RUNNER_TEMP/codex/libexec/codex/bin/codex-exec-server"
       - name: Create pull request
         if: steps.update.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
