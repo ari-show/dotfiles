@@ -1,5 +1,5 @@
 # Dependabot の対象外の固定パッケージを更新し、ビルドに成功したら PR を作る。
-# ghtkn は Linux、cmux は Apple Silicon macOS で検証する。
+# ghtkn は Linux、cmux と Raycast は Apple Silicon macOS で検証する。
 name: Update pinned Nix packages
 
 on:
@@ -110,5 +110,53 @@ jobs:
 
             - [リリースノート](https://github.com/manaflow-ai/cmux/releases/tag/v${{ steps.update.outputs.after }})
             - Apple Silicon macOS で Nix ビルドと CLI の起動・設定構文を確認済みです。
+            - マージ後、`git pull` と `make nix-sync` で手元に反映してください。
+          labels: dependencies
+
+  raycast:
+    concurrency:
+      group: update-raycast
+      cancel-in-progress: false
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Nix
+        uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b # v31.11.3
+      - name: Check latest release
+        id: update
+        run: python3 scripts/update-raycast
+      - name: Build and verify on Apple Silicon
+        if: steps.update.outputs.changed == 'true'
+        env:
+          EXPECTED: ${{ steps.update.outputs.after }}
+        run: |
+          set -euo pipefail
+          nix build ./nix#raycast --out-link "$RUNNER_TEMP/raycast"
+          app="$RUNNER_TEMP/raycast/Applications/Raycast.app"
+          # GUI アプリは CI で起動できないので、同梱の版番号と公式署名を確認する。
+          # CFBundleVersion は 0 固定なので CFBundleShortVersionString（例: 2.12.1.0）を見る。
+          actual="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app/Contents/Info.plist")"
+          if [ "${actual}" != "${EXPECTED}" ]; then
+            echo "::error::version mismatch: expected ${EXPECTED}, got ${actual}"
+            exit 1
+          fi
+          codesign --verify --deep --strict "$app"
+          spctl --assess --type execute --verbose "$app"
+      - name: Create pull request
+        if: steps.update.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          branch: deps/update-raycast-pin
+          delete-branch: true
+          sign-commits: true
+          add-paths: nix/raycast-source.json
+          commit-message: 'chore(raycast): update to ${{ steps.update.outputs.after }}'
+          title: 'chore(raycast): update to ${{ steps.update.outputs.after }}'
+          body: |
+            Raycast を ${{ steps.update.outputs.before }} から ${{ steps.update.outputs.after }} に更新します。
+
+            - [変更履歴](https://www.raycast.com/changelog)
+            - Apple Silicon macOS で Nix ビルド、同梱の版番号、コード署名・公証を確認済みです。
             - マージ後、`git pull` と `make nix-sync` で手元に反映してください。
           labels: dependencies
