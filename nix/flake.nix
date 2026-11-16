@@ -113,11 +113,10 @@
               mainProgram = "ghtkn";
             };
           };
-          # nixpkgs の cargoUseSystemLibs が AWS_LC_SYS_USE_SYSTEM=1 を強制するが、
-          # codex の定義に aws-lc が無くビルドに失敗するため補う。上流で修正されたら削除する。
-          codex = pkgs.codex.overrideAttrs (old: {
-            buildInputs = (old.buildInputs or [ ]) ++ [ pkgs.aws-lc ];
-          });
+          # nixpkgs の cargoUseSystemLibs が aws-lc / zstd などのシステムライブラリ利用を強制するが、
+          # codex の定義が追従しておらずビルドに失敗するため、同梱ソースからのビルドに戻す。
+          # 上流で修正されたら削除する。
+          codex = pkgs.codex.overrideAttrs { dontCargoUseSystemLibs = true; };
           # 全環境（Mac / Linux サーバー）で使う CLI。
           commonTools = [
             codex
