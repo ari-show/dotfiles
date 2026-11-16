@@ -15,6 +15,8 @@ Raycast から起動するには、Raycast の Settings → Script Commands → 
 再登録は不要。
 Raycast も Apple Silicon macOS の `dotfiles-tools` に含まれるため、
 `open ~/.nix-profile/Applications/Raycast.app` で起動できる。
+`make raycast` を実行すると `~/Applications/Raycast.app` にもリンクされ、
+`open ~/Applications/Raycast.app` でも起動できる。
 
 その他の環境でのインストール方法は [公式ドキュメント](https://ghostty.org/docs/install) を参照。
 

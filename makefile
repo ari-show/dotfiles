@@ -1,4 +1,4 @@
-setup: os wezterm herdr ghostty nix ghtkn cmux lazyvim
+setup: os wezterm herdr ghostty nix ghtkn cmux raycast lazyvim
 
 .PHONY: help setup mac uv-check
 os:bootstrap/setup.pm
@@ -22,13 +22,16 @@ ghtkn:bootstrap/ghtkn.pm
 cmux:bootstrap/cmux.pm
 	perl bootstrap/cmux.pm
 
+raycast:bootstrap/raycast.pm
+	perl bootstrap/raycast.pm
+
 lazyvim:bootstrap/lazyvim.pm
 	perl bootstrap/lazyvim.pm
 
 mac: os
 linux: os
 
-.PHONY: help setup os wezterm herdr ghostty nix ghtkn cmux lazyvim nix-repair nix-update nix-sync mac linux \
+.PHONY: help setup os wezterm herdr ghostty nix ghtkn cmux raycast lazyvim nix-repair nix-update nix-sync mac linux \
 	check lint lint-workflows fmt fmt-check build rollback outdated
 
 help:
@@ -41,6 +44,7 @@ help:
 	@echo "  make nix      # Link Nix config (~/.config/nix/nix.conf)"
 	@echo "  make ghtkn    # Link ghtkn config (~/.config/ghtkn/ghtkn.yaml)"
 	@echo "  make cmux     # Link cmux config and the Nix app (Apple Silicon macOS)"
+	@echo "  make raycast  # Link the Nix Raycast app to ~/Applications (Apple Silicon macOS)"
 	@echo "  make lazyvim  # Link the separate LazyVim config"
 	@echo "  make nix-repair # Repair /nix mount after macOS upgrade (needs sudo)"
 	@echo "  make nix-update # Update nix/flake.lock, build, and upgrade the profile (primary Mac)"
