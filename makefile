@@ -3,7 +3,7 @@
 #  PATH を足す方法では直らない)
 NIX := $(shell command -v nix 2>/dev/null || echo /nix/var/nix/profiles/default/bin/nix)
 
-setup: os wezterm herdr ghostty nix ghtkn cmux raycast lazyvim
+setup: os wezterm herdr ghostty nix ghtkn ssh cmux raycast lazyvim
 
 .PHONY: help setup mac uv-check
 os:bootstrap/setup.pm
@@ -24,6 +24,9 @@ nix:bootstrap/nix.pm
 ghtkn:bootstrap/ghtkn.pm
 	perl bootstrap/ghtkn.pm
 
+ssh:bootstrap/ssh.pm
+	perl bootstrap/ssh.pm
+
 cmux:bootstrap/cmux.pm
 	perl bootstrap/cmux.pm
 
@@ -36,7 +39,7 @@ lazyvim:bootstrap/lazyvim.pm
 mac: os
 linux: os
 
-.PHONY: help setup os wezterm herdr ghostty nix ghtkn cmux raycast lazyvim nix-repair nix-doctor nix-update nix-sync mac linux \
+.PHONY: help setup os wezterm herdr ghostty nix ghtkn ssh cmux raycast lazyvim nix-repair nix-doctor nix-update nix-sync mac linux \
 	check lint lint-workflows fmt fmt-check build rollback outdated
 
 help:
@@ -48,6 +51,7 @@ help:
 	@echo "  make ghostty  # Link Ghostty config (~/.config/ghostty/config)"
 	@echo "  make nix      # Link Nix config (~/.config/nix/nix.conf)"
 	@echo "  make ghtkn    # Link ghtkn config (~/.config/ghtkn/ghtkn.yaml)"
+	@echo "  make ssh      # Use the 1Password SSH agent (adds one Include line to ~/.ssh/config if missing)"
 	@echo "  make cmux     # Link cmux config and the Nix app (Apple Silicon macOS)"
 	@echo "  make raycast  # Link the Nix Raycast app to ~/Applications (Apple Silicon macOS)"
 	@echo "  make lazyvim  # Link the separate LazyVim config"
