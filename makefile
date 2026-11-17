@@ -1,3 +1,8 @@
+# シェルの PATH から Nix が抜けていても動くよう、nix は固定パスにフォールバックする。
+# (macOS 標準の GNU Make 3.81 は export した PATH をコマンド探索に使わないので、
+#  PATH を足す方法では直らない)
+NIX := $(shell command -v nix 2>/dev/null || echo /nix/var/nix/profiles/default/bin/nix)
+
 setup: os wezterm herdr ghostty nix ghtkn cmux raycast lazyvim
 
 .PHONY: help setup mac uv-check
@@ -31,7 +36,7 @@ lazyvim:bootstrap/lazyvim.pm
 mac: os
 linux: os
 
-.PHONY: help setup os wezterm herdr ghostty nix ghtkn cmux raycast lazyvim nix-repair nix-update nix-sync mac linux \
+.PHONY: help setup os wezterm herdr ghostty nix ghtkn cmux raycast lazyvim nix-repair nix-doctor nix-update nix-sync mac linux \
 	check lint lint-workflows fmt fmt-check build rollback outdated
 
 help:
@@ -47,6 +52,7 @@ help:
 	@echo "  make raycast  # Link the Nix Raycast app to ~/Applications (Apple Silicon macOS)"
 	@echo "  make lazyvim  # Link the separate LazyVim config"
 	@echo "  make nix-repair # Repair /nix mount after macOS upgrade (needs sudo)"
+	@echo "  make nix-doctor # Diagnose why nix is missing from this shell (changes nothing)"
 	@echo "  make nix-update # Update nix/flake.lock, build, and upgrade the profile (primary Mac)"
 	@echo "  make nix-sync   # Reinstall dotfiles-tools from the committed lock (other Macs)"
 	@echo "  make check      # Run everything CI runs (lint + nix flake check)"
@@ -64,21 +70,24 @@ help:
 nix-repair: nix-repair.sh
 	sudo bash nix-repair.sh
 
+nix-doctor:
+	@bash scripts/nix-doctor
+
 uv-check:
-	@nix develop ./nix -c uv --version
+	@$(NIX) develop ./nix -c uv --version
 
 # 普段使いの Mac で実行: lock を進めてビルド確認し、profile を入れ直す。
 # 終わったら nix/flake.lock を commit / push する。
 nix-update:
-	nix flake update --flake ./nix
-	nix build ./nix#dotfiles-tools --no-link
-	nix profile upgrade nix
-	nix profile list
+	$(NIX) flake update --flake ./nix
+	$(NIX) build ./nix#dotfiles-tools --no-link
+	$(NIX) profile upgrade nix
+	$(NIX) profile list
 
 # 他の Mac で実行: git pull 済みの lock のまま profile を入れ直す。
 nix-sync:
-	nix profile upgrade nix
-	nix profile list
+	$(NIX) profile upgrade nix
+	$(NIX) profile list
 
 # ---- 検査・整形（CI の check workflow も `make check` を実行する） ----
 
@@ -86,8 +95,8 @@ NIX_FILES_CMD = find . -name '*.nix' -not -path './result*'
 
 # push 前に手元で確認する。CI と同じ内容。
 check: lint
-	nix flake check ./nix --all-systems --no-build
-	nix flake check ./nix -L
+	$(NIX) flake check ./nix --all-systems --no-build
+	$(NIX) flake check ./nix -L
 
 lint: lint-workflows
 	@for f in bootstrap/*.pm; do perl -c "$$f" || exit 1; done
@@ -100,18 +109,18 @@ lint-workflows:
 	fi
 
 fmt:
-	cd nix && $(NIX_FILES_CMD) -print0 | xargs -0 nix fmt --
+	cd nix && $(NIX_FILES_CMD) -print0 | xargs -0 $(NIX) fmt --
 
 fmt-check:
-	cd nix && $(NIX_FILES_CMD) -print0 | xargs -0 nix fmt -- --check
+	cd nix && $(NIX_FILES_CMD) -print0 | xargs -0 $(NIX) fmt -- --check
 
 build:
-	nix build ./nix#dotfiles-tools --no-link -L
+	$(NIX) build ./nix#dotfiles-tools --no-link -L
 
 # nix-update / nix-sync で入れた profile がおかしいときに 1 世代戻す。
 rollback:
-	nix profile rollback
-	nix profile list
+	$(NIX) profile rollback
+	$(NIX) profile list
 
 outdated:
 	@perl scripts/outdated
