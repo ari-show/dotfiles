@@ -21,6 +21,7 @@ dotfiles/
 ├── .config/        # ~/.config 配下にリンクする設定（wezterm / ghostty / herdr / nix）
 ├── docs/           # 各種ドキュメント（docs/README.md が入り口）
 ├── nix/            # flake.nix（dotfiles-tools の定義）
+├── scripts/        # 補助スクリプト（nix-doctor / outdated など）
 ├── Brewfile        # macOS の任意の GUI アプリ（Homebrew）
 ├── makefile        # セットアップ用ターゲット（make help で一覧）
 ├── nix-install.sh  # Nix のインストールスクリプト
@@ -83,13 +84,18 @@ nix --version
 bash nix-install.sh
 ```
 
+Nix がすでに入っている場合、このスクリプトはインストーラを実行しません。
+`nix` が PATH に無くても `/nix/var/nix/profiles/default/bin/nix` があれば「インストール済み」と判定します。
+macOS で `Nix Store` ボリュームだけが残っている場合は、既存のボリュームを消さないよう中止して `make nix-repair` を案内します。
+
 - インストール後、新しいターミナルを開き直してください。
 
 ```bash
 nix --version
 ```
 
-> 補足: `nix: command not found` になる場合は、ターミナルを開き直すか、shell の初期化ファイルで PATH を上書きしていないか確認してください。
+> 補足: `nix: command not found` になる場合は、まず `make nix-doctor` で原因を切り分けてください。
+> `/nix` が無い場合は 1-2、Nix はあるのに PATH に入っていない場合は 1-3 を参照してください。
 
 ---
 
@@ -114,6 +120,39 @@ make nix-repair
 - `/etc/zshrc` / `/etc/bashrc` の Nix 初期化フック
 
 `/nix` を再起動なしで作れなかった場合はその旨を表示して終了するので、再起動後にもう一度 `make nix-repair` を実行してください。
+
+---
+
+### 1-3) Nix は入っているのに `nix: command not found` になる場合
+
+`/nix` も `nix-daemon` も正常なのに、特定のターミナルでだけ `nix` が見つからないことがあります。
+次のコマンドで、Nix が入っているかと、このシェルの PATH に入っているかを分けて確認できます（何も変更しません）。
+
+```bash
+cd ~/dotfiles
+make nix-doctor
+```
+
+`このシェルの PATH に Nix が入っていない` と出る場合の原因:
+
+- Nix の初期化スクリプト `nix-daemon.sh` は、環境変数 `__ETC_PROFILE_NIX_SOURCED` があると「読み込み済み」とみなして何もせずに抜けます。PATH に Nix が入っているかは確かめません。
+- シェルから `open` で起動した GUI アプリ（Raycast など）は、この変数を引き継ぎます。そのアプリから起動したターミナル（cmux など）にも伝わりますが、PATH は既定値に戻っています。
+- その結果、ターミナル内のシェルはすべて Nix の初期化を飛ばします。
+
+直し方:
+
+- そのシェルだけ直す:
+
+  ```bash
+  unset __ETC_PROFILE_NIX_SOURCED && . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+  ```
+
+- 根本的に直す: ターミナルと、それを起動したアプリ（Raycast など）を Finder / Spotlight から起動し直す。再起動やログインし直しでも直ります。
+
+`config/mac/.zprofile` は、PATH に Nix が無ければこの変数を外してから `nix-daemon.sh` を読むので、
+この設定が入っていれば新しいターミナルでは再発しません。
+また、makefile の `nix` を使うターゲット（`make build` / `make nix-sync` など）は、PATH に `nix` が無ければ
+`/nix/var/nix/profiles/default/bin/nix` を使うので、この状態でも動きます。
 
 ---
 

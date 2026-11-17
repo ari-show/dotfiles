@@ -10,6 +10,13 @@ fi
 
 # --- 3) Nix
 if [ -r /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
+  # nix-daemon.sh は __ETC_PROFILE_NIX_SOURCED があると PATH を確かめずに抜ける。
+  # シェルから open された GUI アプリ (Raycast など) 配下では、この変数だけが継承されて
+  # PATH は既定値に戻るので、PATH に Nix が無ければ外して読み直させる。
+  case ":$PATH:" in
+    *:/nix/var/nix/profiles/default/bin:*) ;;
+    *) unset __ETC_PROFILE_NIX_SOURCED ;;
+  esac
   . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 fi
 

@@ -1,0 +1,53 @@
+#!/bin/bash
+# Nix が「入っているか」と「このシェルから使えるか」を分けて診断する。
+# 何も変更しない。使い方: make nix-doctor
+set -u
+
+NIX_BIN_DIR=/nix/var/nix/profiles/default/bin
+NIX_DAEMON_SH=/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+
+ok()   { printf '[OK]   %s\n' "$*"; }
+ng()   { printf '[NG]   %s\n' "$*"; }
+hint() { printf '       %s\n' "$*"; }
+
+installed=1
+if [ -d /nix/store ]; then
+    ok "/nix/store がある"
+else
+    ng "/nix/store が無い"
+    installed=0
+fi
+if [ -x "$NIX_BIN_DIR/nix" ]; then
+    ok "$NIX_BIN_DIR/nix がある ($("$NIX_BIN_DIR/nix" --version 2>/dev/null))"
+else
+    ng "$NIX_BIN_DIR/nix が無い"
+    installed=0
+fi
+if pgrep -x nix-daemon >/dev/null 2>&1; then
+    ok "nix-daemon が動いている"
+else
+    ng "nix-daemon が動いていない"
+fi
+
+if [ "$installed" -eq 0 ]; then
+    hint "未インストールなら: bash nix-install.sh"
+    hint "macOS アップグレード後に消えたなら: make nix-repair"
+    exit 1
+fi
+
+case ":$PATH:" in
+    *":$NIX_BIN_DIR:"*)
+        ok "このシェルの PATH に Nix が入っている"
+        exit 0
+        ;;
+esac
+
+ng "このシェルの PATH に Nix が入っていない"
+if [ -n "${__ETC_PROFILE_NIX_SOURCED:-}" ]; then
+    hint "__ETC_PROFILE_NIX_SOURCED だけが継承されていて、nix-daemon.sh が何もせずに抜けている。"
+    hint "ターミナルを起動したアプリ (Raycast など) がシェルから open されたときに起きる。"
+fi
+hint "このシェルを直す:"
+hint "  unset __ETC_PROFILE_NIX_SOURCED && . $NIX_DAEMON_SH"
+hint "根本的に直す: ターミナルとそれを起動したアプリを Finder / Spotlight から起動し直す。"
+exit 1
