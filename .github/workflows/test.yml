@@ -30,6 +30,9 @@ jobs:
       - name: Test XDG configuration paths
         run: bash scripts/test-xdg-config.sh
 
+      - name: Test SSH config setup
+        run: bash scripts/test-ssh-config.sh
+
       - name: Integration test
         shell: bash
         run: |

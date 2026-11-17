@@ -18,7 +18,7 @@ Nix + make + perl でセットアップを自動化している。
 dotfiles/
 ├── bootstrap/      # セットアップ用の perl スクリプト
 ├── config/         # OS ごとの設定ファイル（mac / linux）
-├── .config/        # ~/.config 配下にリンクする設定（wezterm / ghostty / herdr / nix）
+├── .config/        # ~/.config 配下にリンクする設定（wezterm / ghostty / herdr / nix）と ssh の追加設定
 ├── docs/           # 各種ドキュメント（docs/README.md が入り口）
 ├── nix/            # flake.nix（dotfiles-tools の定義）
 ├── scripts/        # 補助スクリプト（nix-doctor / outdated など）
@@ -299,6 +299,34 @@ ghtkn の設定だけを適用する場合は、次を実行します。
 
 ```bash
 make ghtkn
+```
+
+`make setup` は 1Password の SSH エージェントを使う設定も入れます。
+
+```text
+~/.ssh/config.d/1password.conf -> ~/dotfiles/.config/ssh/1password.conf
+```
+
+`~/.ssh/config` にはホスト名など公開したくない情報があるため、dotfiles では管理しません。
+書き換えるのは次の 2 点だけで、何度実行しても結果は同じです。
+
+- `Include ~/.ssh/config.d/*.conf` の行が無ければ、先頭に 1 行だけ足します。すでにあれば何もしません。
+- 以前 `~/.ssh/config` に直接書かれた、中身が 1Password の `IdentityAgent` だけの `Host *` ブロックは取り除きます（同じ設定が `1password.conf` に入るため）。ほかの設定を含むブロックには触りません。
+
+書き換える前に `~/.ssh/config.before-dotfiles.<日時>` へバックアップを取ります。
+`1password.conf` は 1Password のソケットがあるときだけ有効になるので、1Password が無いマシンでは何も変わりません。
+秘密鍵は 1Password の中にあり、設定ファイルに書くのはソケットのパスだけです。
+
+SSH の設定だけを適用する場合は、次を実行します。
+
+```bash
+make ssh
+```
+
+反映されたかは次で確認できます（`identityagent` に 1Password のソケットが表示されます）。
+
+```bash
+ssh -G github.com | grep -i identityagent
 ```
 
 #### Neovim / LazyVim と lazygit
