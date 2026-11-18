@@ -519,7 +519,7 @@ dependencies = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "omnigent", extras = ["databricks", "modal"], specifier = "==0.20.0" }]
+requires-dist = [{ name = "omnigent", extras = ["databricks", "modal"], specifier = "==0.21.0" }]
 
 [[package]]
 name = "fastapi"
@@ -1389,7 +1389,7 @@ wheels = [
 
 [[package]]
 name = "omnigent"
-version = "0.20.0"
+version = "0.21.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "alembic" },
@@ -1433,9 +1433,9 @@ dependencies = [
     { name = "websockets" },
     { name = "zstandard" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/12/5f/fe2093aa83c322a9d635fbd65a7bd3abfc9dff44220004bddfd34ba6d9fc/omnigent-0.20.0.tar.gz", hash = "sha256:60158b6cc70b6b9b96aa354f1f923758737649f0d7b09702a8e608b5129850b8", size = 14153403, upload-time = "2026-10-28T05:43:12.118Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c6/a0/a579e3381f411f1db4c097e5f700690eead8faa9f62f2ac7880984918156/omnigent-0.21.0.tar.gz", hash = "sha256:b444ec3d3d313f5563ea8019fb39a7db2f695859453e8c4e41431f38e4c99c99", size = 14525877, upload-time = "2026-11-05T04:28:21.859Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/04/25/3ea7e6c887cb2e24e2edec3b120df08bbca8922d8205bc177aaff0f8acb2/omnigent-0.20.0-py3-none-any.whl", hash = "sha256:cf173207efc48d1bd133e1d56d9401b289a021f21c1443cde49448f512f80c6a", size = 14462824, upload-time = "2026-10-28T05:43:09.471Z" },
+    { url = "https://files.pythonhosted.org/packages/9a/e3/0cc833cf682d5a58d0138afca69b053f20434a0f1a82fbf1ebc4e61b07d9/omnigent-0.21.0-py3-none-any.whl", hash = "sha256:c97f54d90f34e8738379f68c7ad34a3c2a4dbbb3f86641e245db536ad51cab39", size = 14809281, upload-time = "2026-11-05T04:28:18.447Z" },
 ]
 
 [package.optional-dependencies]
@@ -1453,21 +1453,21 @@ modal = [
 
 [[package]]
 name = "omnigent-client"
-version = "0.20.0"
+version = "0.21.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
     { name = "omnigent" },
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1e/1c/52bd6a72e464d41abc18253b454a8a0cb3710654162cf09d68d1dd3dde45/omnigent_client-0.20.0.tar.gz", hash = "sha256:fe605667f435f8eac324acc90f2299415e22f7e34acfb89e2eab24a046c4ca16", size = 104186, upload-time = "2026-10-28T05:43:08.812Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/01/f0/a3de58cd2207d30f7d5c9fd94ca9170748068e9435c21995ee405e4f2ea5/omnigent_client-0.21.0.tar.gz", hash = "sha256:9c6c292544d0d3c590941b4712367b7128b5ccba902d76a09ee5e4e2ee2d8a13", size = 104192, upload-time = "2026-11-05T04:29:38.871Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/12/aa/d49f5164d9660eed14ccf316a0c90ad46b272b5518c709da6532e777058f/omnigent_client-0.20.0-py3-none-any.whl", hash = "sha256:33c0345ddbf76c65fa9d021764e19addfb17a5f51546f49e06061809c8c0e42a", size = 119669, upload-time = "2026-10-28T05:43:07.708Z" },
+    { url = "https://files.pythonhosted.org/packages/d2/45/e00db9a8a9dd0b407f1b60aac37cf447a50a0c26b677f7ebe2859cf2ec2f/omnigent_client-0.21.0-py3-none-any.whl", hash = "sha256:9ee80441859862c998ca79f675f89995abc214c8e146400f66747582aac2f9f6", size = 119669, upload-time = "2026-11-05T04:29:37.768Z" },
 ]
 
 [[package]]
 name = "omnigent-ui-sdk"
-version = "0.20.0"
+version = "0.21.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "omnigent-client" },
@@ -1475,9 +1475,9 @@ dependencies = [
     { name = "pyyaml" },
     { name = "rich" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e2/0f/0d96bb797f5bccee96bb03295e2da2495663a629b79bf48369dfc867421a/omnigent_ui_sdk-0.20.0.tar.gz", hash = "sha256:bd823b6f54df7ab6e936978b2c67508b6c67d7b359b93231a5e5adb5f4ef7eb7", size = 86140, upload-time = "2026-10-28T05:43:12.379Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/cb/f9/e44e26a9c3f36a680b4c516683c4fb1ce312be8a572b29d1ef4b4a7150a5/omnigent_ui_sdk-0.21.0.tar.gz", hash = "sha256:48e58b6cdcf3ea13e43bd1dd3f3170fa7d543d3c88839ed429511ad77de298a8", size = 86140, upload-time = "2026-11-05T04:28:14.226Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5f/da/cea9068a162b4007c0b5cbf7e67c49202ab4a681bfc1db0b9ecc57dd1ec1/omnigent_ui_sdk-0.20.0-py3-none-any.whl", hash = "sha256:515c602850379f763410fba9faadb68e4c1fd442d24aa48454c5d1d89bb08acf", size = 89950, upload-time = "2026-10-28T05:43:10.339Z" },
+    { url = "https://files.pythonhosted.org/packages/47/fa/3f48ccd132ace0e9655c8884702f0157c0d8b7122eeca88256366eee8548/omnigent_ui_sdk-0.21.0-py3-none-any.whl", hash = "sha256:290568d0fb865ab3fefbb9bb664438cf0091bbd991342b480b3a4fb8ea31122b", size = 89951, upload-time = "2026-11-05T04:28:13.134Z" },
 ]
 
 [[package]]
