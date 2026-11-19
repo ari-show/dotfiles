@@ -4,7 +4,7 @@ name: Update pinned Nix packages
 
 on:
   schedule:
-    - cron: "0 0 * * 1" # 毎週月曜 09:00 JST
+    - cron: "0 0 * * *" # 毎日 09:00 JST
   workflow_dispatch:
 
 permissions:
