@@ -48,6 +48,8 @@ jobs:
           # ghtkn には誤って打たれた prerelease タグ v4.0.1-0 があり、タグ基準だとそれを拾ってしまう。
           (
             cd "${update_dir}"
+            # metadata が返す store path をクリーンな runner でも実体化する。
+            nix flake archive . >/dev/null
             nix run --inputs-from . nixpkgs#nix-update -- --flake "${PACKAGE}" \
               --use-github-releases \
               --version-regex '^v(\d+\.\d+\.\d+)$'
