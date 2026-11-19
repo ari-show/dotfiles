@@ -36,11 +36,23 @@ jobs:
         run: |
           set -euo pipefail
           before="$(nix eval --raw ".#${PACKAGE}.version")"
+          # nix-update 1.16 は Git リポジトリのサブディレクトリにある flake のパスを誤る。
+          # flake を一時リポジトリのルートに置き、更新対象のファイルだけを戻す。
+          update_dir="$(mktemp -d "${RUNNER_TEMP}/nix-update.XXXXXX")"
+          cp -R . "${update_dir}/"
+          git -C "${update_dir}" init -q
+          git -C "${update_dir}" add .
+          git -C "${update_dir}" -c user.name=CI -c user.email=ci@example.invalid \
+            -c commit.gpgsign=false commit -qm 'Initialize temporary flake'
           # タグではなく GitHub Releases を見て prerelease を除外し、正式版（vX.Y.Z）だけを対象にする。
           # ghtkn には誤って打たれた prerelease タグ v4.0.1-0 があり、タグ基準だとそれを拾ってしまう。
-          nix run --inputs-from . nixpkgs#nix-update -- --flake "${PACKAGE}" \
-            --use-github-releases \
-            --version-regex '^v(\d+\.\d+\.\d+)$'
+          (
+            cd "${update_dir}"
+            nix run --inputs-from . nixpkgs#nix-update -- --flake "${PACKAGE}" \
+              --use-github-releases \
+              --version-regex '^v(\d+\.\d+\.\d+)$'
+          )
+          cp "${update_dir}/flake.nix" ./flake.nix
           after="$(nix eval --raw ".#${PACKAGE}.version")"
           echo "before=${before}" >> "$GITHUB_OUTPUT"
           echo "after=${after}" >> "$GITHUB_OUTPUT"
