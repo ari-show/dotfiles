@@ -37,7 +37,24 @@ sub link_file {
 
 my $app = "$home_dir/.nix-profile/Applications/Raycast.app";
 if (-d $app) {
-    link_file($app, "$home_dir/Applications/Raycast.app", 'Raycast.app');
+    my $target = "$home_dir/Applications/Raycast.app";
+    link_file($app, $target, 'Raycast.app');
+
+    # 起動中のプロセスは profile の切り替え後も古い store path を使い続ける。
+    if (system('pgrep', '-x', 'Raycast') == 0) {
+        say '[INFO] Restarting Raycast to use the current Nix profile';
+        system('osascript', '-e', 'with timeout of 30 seconds', '-e', 'tell application id "com.raycast.macos" to quit', '-e', 'end timeout') == 0
+          or die "Failed to quit Raycast; restart it manually.\n";
+        for (1 .. 30) {
+            last if system('pgrep', '-x', 'Raycast') != 0;
+            sleep 1;
+        }
+        system('pgrep', '-x', 'Raycast') != 0
+          or die "Raycast is still running; restart it manually.\n";
+        system('open', $target) == 0
+          or die "Failed to start Raycast; open $target manually.\n";
+        say '[OK] Raycast restarted';
+    }
 } else {
     say '[INFO] Install dotfiles-tools with Nix, then run make raycast again to link the app.';
 }

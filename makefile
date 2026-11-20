@@ -53,7 +53,7 @@ help:
 	@echo "  make ghtkn    # Link ghtkn config (~/.config/ghtkn/ghtkn.yaml)"
 	@echo "  make ssh      # Use the 1Password SSH agent (adds one Include line to ~/.ssh/config if missing)"
 	@echo "  make cmux     # Link cmux config and the Nix app (Apple Silicon macOS)"
-	@echo "  make raycast  # Link the Nix Raycast app to ~/Applications (Apple Silicon macOS)"
+	@echo "  make raycast  # Link the Nix Raycast app and restart it if running (Apple Silicon macOS)"
 	@echo "  make lazyvim  # Link the separate LazyVim config"
 	@echo "  make nix-repair # Repair /nix mount after macOS upgrade (needs sudo)"
 	@echo "  make nix-doctor # Diagnose why nix is missing from this shell (changes nothing)"
