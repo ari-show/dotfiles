@@ -111,7 +111,7 @@ ghtkn v0.4.0 以降は `ghtkn get` から device flow が自動起動しない�
 cmux 向けの gh ラッパーは不要です。認証が必要な場合は手動で `ghtkn auth` を実行します。
 
 `uv` / `gh` / `tmux` / `ghtkn` / `omnigent` などは `nix/flake.nix` の `dotfiles-tools` として
-`nix profile`（entry 名 `nix`）に入っています。実体は読み取り専用の `/nix/store` にあるため、
+`nix profile` に入っています（entry 名は端末により `nix` や `nix-1` などで、`make nix-update` / `make nix-sync` が自動で探します）。実体は読み取り専用の `/nix/store` にあるため、
 `uv self update` のようなツール自身の自己更新は使えません。版はすべて Nix 側で管理します。
 
 > `~/.local/bin` に standalone 版の `uv` を入れると Nix 版より先に見つかり二重管理になります。
@@ -121,7 +121,7 @@ cmux 向けの gh ラッパーは不要です。認証が必要な場合は手�
 
 ```bash
 $ cd ~/dotfiles
-$ make nix-update   # flake.lock 更新 → build 確認 → nix profile upgrade nix
+$ make nix-update   # flake.lock 更新 → build 確認 → dotfiles-tools の entry を upgrade
 $ uv --version      # Nix 版 (~/.nix-profile/bin/uv) が新しくなっていることを確認
 $ git add nix/flake.lock
 $ git commit -m "chore(nix): update flake.lock"
@@ -138,10 +138,11 @@ lock は 3-i で固定済みなので、他の端末では `nix flake update` �
 ```bash
 $ cd ~/dotfiles
 $ git pull
-$ make nix-sync     # nix profile upgrade nix
+$ make nix-sync     # dotfiles-tools の entry を upgrade
 ```
 
-GitHub 上の flake を直接 profile に入れている端末では `nix profile upgrade nix --refresh` を使います。
+GitHub 上の flake を直接 profile に入れている端末では `nix profile upgrade <entry 名> --refresh` を使います
+（entry 名は `perl scripts/nix-profile-entry` で確認できます）。
 
 ### 3-iii. 戻したいとき
 

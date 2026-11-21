@@ -1,0 +1,34 @@
+#!/usr/bin/env perl
+# nix profile から dotfiles-tools の entry 名を探して 1 行で出力する。
+#
+# entry 名は profile に入れた順で `nix` / `nix-1` などになり、端末ごとに異なる。
+# 例えば Nix 本体が `nix` という名前で profile に入っている端末では、
+# dotfiles-tools は `nix-1` になる。名前を決め打ちせず flake attribute で探す。
+#
+# 使い方: perl scripts/nix-profile-entry [nix コマンド]
+use strict;
+use warnings;
+use JSON::PP qw(decode_json);
+
+my $nix  = shift // 'nix';
+my $attr = 'dotfiles-tools';
+
+open my $fh, '-|', $nix, 'profile', 'list', '--json'
+    or die "failed to run $nix profile list: $!\n";
+my $json = do { local $/; <$fh> };
+close $fh or die "$nix profile list --json failed\n";
+
+my $elements = decode_json($json)->{elements} // {};
+my @names = sort grep {
+    my $path = $elements->{$_}{attrPath} // '';
+    $path =~ /(?:^|\.)\Q$attr\E$/;
+} keys %$elements;
+
+if (!@names) {
+    die "error: $attr is not in the Nix profile. Add it with: nix profile add ./nix#$attr\n";
+}
+if (@names > 1) {
+    die "error: $attr appears multiple times in the Nix profile (@names).\n"
+      . "Remove the extras with: nix profile remove <name>\n";
+}
+print "$names[0]\n";
