@@ -85,12 +85,13 @@ uv-check:
 nix-update:
 	$(NIX) flake update --flake ./nix
 	$(NIX) build ./nix#dotfiles-tools --no-link
-	$(NIX) profile upgrade nix
+	entry=$$(perl scripts/nix-profile-entry $(NIX)) && $(NIX) profile upgrade "$$entry"
 	$(NIX) profile list
 
 # 他の Mac で実行: git pull 済みの lock のまま profile を入れ直す。
+# profile の entry 名は端末ごとに違う（`nix` / `nix-1` など）ので、flake attribute から探す。
 nix-sync:
-	$(NIX) profile upgrade nix
+	entry=$$(perl scripts/nix-profile-entry $(NIX)) && $(NIX) profile upgrade "$$entry"
 	$(NIX) profile list
 
 # ---- 検査・整形（CI の check workflow も `make check` を実行する） ----
