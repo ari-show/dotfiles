@@ -4,6 +4,11 @@ on:
   push:
     branches: [ main ]
   workflow_dispatch:
+    inputs:
+      benchmark:
+        description: Measure cold and warm builds on fresh runners
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -27,8 +32,50 @@ jobs:
         uses: cachix/install-nix-action@3dc140bfc76c49fbd4dd958429132e3746bcb086 # v31.11.5
 
       - name: Build installable tools package
+        if: ${{ !inputs.benchmark }}
         run: |
           nix build ./nix#packages.${{ matrix.system }}.dotfiles-tools
+
+      - name: Measure cold and warm builds
+        if: ${{ inputs.benchmark }}
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p dist/benchmark
+          {
+            echo "# Nix build timing: ${{ matrix.system }}"
+            echo
+            echo "Commit: $GITHUB_SHA"
+            echo "Runner: $RUNNER_OS / $RUNNER_ARCH"
+            echo "Nix: $(nix --version)"
+            echo "Fresh GitHub-hosted runner; default substituters enabled; no Actions Nix store cache."
+            echo "Time includes evaluation, downloads and builds; it excludes checkout and Nix installation."
+            echo
+          } | tee dist/benchmark/summary.md
+          status=0
+          for phase in cold warm; do
+            start=$(date +%s)
+            nix build './nix#packages.${{ matrix.system }}.dotfiles-tools' --no-link -L \
+              > "dist/benchmark/$phase.log" 2>&1
+            result=$?
+            elapsed=$(( $(date +%s) - start ))
+            echo "- $phase: ${elapsed}s (exit $result)" | tee -a dist/benchmark/summary.md
+            if [ "$result" -ne 0 ]; then
+              tail -n 100 "dist/benchmark/$phase.log"
+              status=$result
+              break
+            fi
+          done
+          cat dist/benchmark/summary.md >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+
+      - name: Upload benchmark logs
+        if: ${{ always() && inputs.benchmark }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: nix-build-timing-${{ matrix.system }}
+          path: dist/benchmark/
+          if-no-files-found: ignore
 
       - name: Export Nix closure as portable artifact
         shell: bash
