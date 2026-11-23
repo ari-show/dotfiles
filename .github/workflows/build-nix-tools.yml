@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       benchmark:
-        description: Measure cold and warm builds on fresh runners
+        description: Compare artifact preparation methods on fresh runners
         type: boolean
         default: false
 
@@ -16,13 +16,15 @@ permissions:
 jobs:
   build-tools:
     strategy:
+      fail-fast: false
       matrix:
-        include:
+        platform:
           - runner: ubuntu-26.04
             system: x86_64-linux
           - runner: macos-15
             system: aarch64-darwin
-    runs-on: ${{ matrix.runner }}
+        mode: ${{ fromJSON(inputs.benchmark && '["baseline", "xz-parallel", "zstd", "no-bundle"]' || '["baseline"]') }}
+    runs-on: ${{ matrix.platform.runner }}
 
     steps:
       - name: Checkout
@@ -32,67 +34,50 @@ jobs:
         uses: cachix/install-nix-action@3dc140bfc76c49fbd4dd958429132e3746bcb086 # v31.11.5
 
       - name: Build installable tools package
-        if: ${{ !inputs.benchmark }}
-        run: |
-          nix build ./nix#packages.${{ matrix.system }}.dotfiles-tools
+        run: nix build ./nix#packages.${{ matrix.platform.system }}.dotfiles-tools --no-link -L
 
-      - name: Measure cold and warm builds
-        if: ${{ inputs.benchmark }}
-        shell: bash
-        run: |
-          set -uo pipefail
-          mkdir -p dist/benchmark
-          {
-            echo "# Nix build timing: ${{ matrix.system }}"
-            echo
-            echo "Commit: $GITHUB_SHA"
-            echo "Runner: $RUNNER_OS / $RUNNER_ARCH"
-            echo "Nix: $(nix --version)"
-            echo "Fresh GitHub-hosted runner; default substituters enabled; no Actions Nix store cache."
-            echo "Time includes evaluation, downloads and builds; it excludes checkout and Nix installation."
-            echo
-          } | tee dist/benchmark/summary.md
-          status=0
-          for phase in cold warm; do
-            start=$(date +%s)
-            nix build './nix#packages.${{ matrix.system }}.dotfiles-tools' --no-link -L \
-              > "dist/benchmark/$phase.log" 2>&1
-            result=$?
-            elapsed=$(( $(date +%s) - start ))
-            echo "- $phase: ${elapsed}s (exit $result)" | tee -a dist/benchmark/summary.md
-            if [ "$result" -ne 0 ]; then
-              tail -n 100 "dist/benchmark/$phase.log"
-              status=$result
-              break
-            fi
-          done
-          cat dist/benchmark/summary.md >> "$GITHUB_STEP_SUMMARY"
-          exit "$status"
-
-      - name: Upload benchmark logs
-        if: ${{ always() && inputs.benchmark }}
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: nix-build-timing-${{ matrix.system }}
-          path: dist/benchmark/
-          if-no-files-found: ignore
-
-      - name: Export Nix closure as portable artifact
+      - name: Copy closure into binary cache
+        if: ${{ matrix.mode != 'no-bundle' }}
         shell: bash
         run: |
           set -euo pipefail
-          STORE_PATH="$(nix path-info ./nix#packages.${{ matrix.system }}.dotfiles-tools)"
-
           mkdir -p dist/cache
-          nix copy --to "file://$PWD/dist/cache" ./nix#packages.${{ matrix.system }}.dotfiles-tools
+          case '${{ matrix.mode }}' in
+            baseline) options='' ;;
+            xz-parallel) options='?compression=xz&parallel-compression=true' ;;
+            zstd) options='?compression=zstd&parallel-compression=true' ;;
+          esac
+          nix copy --to "file://$PWD/dist/cache$options" ./nix#packages.${{ matrix.platform.system }}.dotfiles-tools
+          nix path-info ./nix#packages.${{ matrix.platform.system }}.dotfiles-tools > dist/store-path.txt
+          printf '%s\n' '${{ matrix.platform.system }}' > dist/system.txt
+          echo "Cache disk usage: $(du -sh dist/cache | cut -f1)" >> "$GITHUB_STEP_SUMMARY"
 
-          printf '%s\n' "${STORE_PATH}" > dist/store-path.txt
-          printf '%s\n' "${{ matrix.system }}" > dist/system.txt
+      - name: Package cache with gzip
+        if: ${{ matrix.mode == 'baseline' || matrix.mode == 'xz-parallel' }}
+        shell: bash
+        run: |
+          tar -C dist -czf dotfiles-tools-${{ matrix.platform.system }}.tgz cache store-path.txt system.txt
+          echo "Bundle disk usage: $(du -h dotfiles-tools-${{ matrix.platform.system }}.tgz | cut -f1)" >> "$GITHUB_STEP_SUMMARY"
 
-          tar -C dist -czf "dotfiles-tools-${{ matrix.system }}.tgz" cache store-path.txt system.txt
+      - name: Package cache without gzip
+        if: ${{ matrix.mode == 'zstd' }}
+        shell: bash
+        run: |
+          tar -C dist -cf dotfiles-tools-${{ matrix.platform.system }}.tar cache store-path.txt system.txt
+          echo "Bundle disk usage: $(du -h dotfiles-tools-${{ matrix.platform.system }}.tar | cut -f1)" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload bundle artifact
+      - name: Upload baseline bundle
+        if: ${{ matrix.mode == 'baseline' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: dotfiles-tools-${{ matrix.system }}
-          path: dotfiles-tools-${{ matrix.system }}.tgz
+          name: dotfiles-tools-${{ matrix.platform.system }}
+          path: dotfiles-tools-${{ matrix.platform.system }}.tgz
+
+      - name: Upload comparison bundle
+        if: ${{ matrix.mode == 'xz-parallel' || matrix.mode == 'zstd' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dotfiles-tools-${{ matrix.platform.system }}-${{ matrix.mode }}
+          path: dotfiles-tools-${{ matrix.platform.system }}.*
+          compression-level: 0
+          retention-days: 1
