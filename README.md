@@ -481,6 +481,8 @@ make nix-sync  # Nix のツールを入れ直す
 
 `dotfiles-tools` に含まれる `uv` / `gnumake` / `perl` などは、利用可能であれば Nix の binary cache から取得されます。取得できない場合はローカルでビルドされます。
 
+CI ではビルド成果物を保存していません。`dotfiles-tools` がビルドできるかは、`check` / `check-macos` workflow の `make check` で Linux と macOS の両方について確認しています。
+
 GitHub Actions でビルドした成果物を配布したい場合は、別途 binary cache や artifact を用意し、`nix copy` などで closure を取り込む構成にします。
 
 ## ドキュメント
