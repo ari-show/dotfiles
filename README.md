@@ -335,7 +335,7 @@ ssh -G github.com | grep -i identityagent
 `make lazyvim` で LazyVim の設定を `~/.config/lazyvim` にリンクし、次で起動します。
 
 ```bash
-NVIM_APPNAME=lazyvim nvim
+NVIM_APPNAME=lazyvim nvim  # zsh では `lv` でも起動できます
 lazygit
 ```
 
