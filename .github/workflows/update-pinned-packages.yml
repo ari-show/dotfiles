@@ -10,6 +10,9 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  # GITHUB_TOKEN で作った PR では push / pull_request の CI が自動で動かないので、
+  # PR を作った後に check / check-macos を workflow_dispatch で起動する。
+  actions: write
 
 jobs:
   update:
@@ -71,6 +74,7 @@ jobs:
         run: nix build "./nix#${{ matrix.package }}" --no-link
 
       - name: Create pull request
+        id: cpr
         if: steps.update.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@3ffccacd46053766916f087ce41d627c0b8cf2d1 # v8.1.3
         with:
@@ -87,6 +91,14 @@ jobs:
 
             マージ後、手元で `make nix-update` または `make nix-sync` を実行して profile に反映してください。
           labels: dependencies
+      - name: Run checks on the pull request branch
+        if: steps.cpr.outputs.pull-request-operation == 'created' || steps.cpr.outputs.pull-request-operation == 'updated'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: deps/nix-update-${{ matrix.package }}
+        run: |
+          gh workflow run check.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
+          gh workflow run check-macos.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
 
   codex:
     concurrency:
@@ -111,6 +123,7 @@ jobs:
           test -x "$RUNNER_TEMP/codex/libexec/codex/bin/codex-code-mode-host"
           test -x "$RUNNER_TEMP/codex/libexec/codex/bin/codex-exec-server"
       - name: Create pull request
+        id: cpr
         if: steps.update.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@3ffccacd46053766916f087ce41d627c0b8cf2d1 # v8.1.3
         with:
@@ -128,6 +141,14 @@ jobs:
             - x86_64 Linux で Nix ビルドと `codex --version` を確認済みです。
             - マージ後、`git pull` と `make nix-sync` で手元に反映してください。
           labels: dependencies
+      - name: Run checks on the pull request branch
+        if: steps.cpr.outputs.pull-request-operation == 'created' || steps.cpr.outputs.pull-request-operation == 'updated'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: deps/update-codex
+        run: |
+          gh workflow run check.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
+          gh workflow run check-macos.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
 
   cmux:
     concurrency:
@@ -151,6 +172,7 @@ jobs:
           "$RUNNER_TEMP/cmux/bin/cmux" --version
           "$RUNNER_TEMP/cmux/bin/cmux" config validate --path .config/cmux/cmux.json
       - name: Create pull request
+        id: cpr
         if: steps.update.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@3ffccacd46053766916f087ce41d627c0b8cf2d1 # v8.1.3
         with:
@@ -167,6 +189,14 @@ jobs:
             - Apple Silicon macOS で Nix ビルドと CLI の起動・設定構文を確認済みです。
             - マージ後、`git pull` と `make nix-sync` で手元に反映してください。
           labels: dependencies
+      - name: Run checks on the pull request branch
+        if: steps.cpr.outputs.pull-request-operation == 'created' || steps.cpr.outputs.pull-request-operation == 'updated'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: deps/update-cmux
+        run: |
+          gh workflow run check.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
+          gh workflow run check-macos.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
 
   raycast:
     concurrency:
@@ -199,6 +229,7 @@ jobs:
           codesign --verify --deep --strict "$app"
           spctl --assess --type execute --verbose "$app"
       - name: Create pull request
+        id: cpr
         if: steps.update.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@3ffccacd46053766916f087ce41d627c0b8cf2d1 # v8.1.3
         with:
@@ -215,3 +246,11 @@ jobs:
             - Apple Silicon macOS で Nix ビルド、同梱の版番号、コード署名・公証を確認済みです。
             - マージ後、`git pull` と `make nix-sync` で手元に反映してください。
           labels: dependencies
+      - name: Run checks on the pull request branch
+        if: steps.cpr.outputs.pull-request-operation == 'created' || steps.cpr.outputs.pull-request-operation == 'updated'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: deps/update-raycast-pin
+        run: |
+          gh workflow run check.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
+          gh workflow run check-macos.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
