@@ -7,6 +7,9 @@ alias ll='ls -lh'
 alias la='ls -A'
 alias l='clear && ls'
 
+# Neovim (LazyVim)
+alias lv='NVIM_APPNAME=lazyvim nvim'
+
 # git系
 alias g='git'
 alias ga='git add'
