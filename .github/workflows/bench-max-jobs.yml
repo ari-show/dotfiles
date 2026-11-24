@@ -1,0 +1,41 @@
+# 一時的な計測用 workflow（experiment/nix-max-jobs ブランチだけで使う。main にはマージしない）。
+# /nix/store が空の macOS runner で dotfiles-tools をビルドし、max-jobs ごとの時間を比べる。
+# 「新しい Mac で nix profile add してから使えるようになるまで」に相当する。
+name: Benchmark max-jobs
+
+on:
+  push:
+    branches: [experiment/nix-max-jobs]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        max-jobs: ["1", "auto"]
+        attempt: [1, 2]
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@3dc140bfc76c49fbd4dd958429132e3746bcb086 # v31.11.5
+
+      - name: Show Nix settings
+        run: |
+          sysctl -n hw.ncpu
+          nix config show | grep -E '^(max-jobs|cores|max-substitution-jobs|http-connections) '
+
+      - name: Build dotfiles-tools
+        env:
+          MAX_JOBS: ${{ matrix.max-jobs }}
+        run: |
+          start=$(date +%s)
+          nix build ./nix#dotfiles-tools --no-link --max-jobs "$MAX_JOBS"
+          end=$(date +%s)
+          echo "max-jobs=${MAX_JOBS} attempt=${{ matrix.attempt }}: $((end - start))s" | tee -a "$GITHUB_STEP_SUMMARY"
