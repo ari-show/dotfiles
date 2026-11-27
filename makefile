@@ -39,10 +39,17 @@ karabiner:bootstrap/karabiner.pm
 lazyvim:bootstrap/lazyvim.pm
 	perl bootstrap/lazyvim.pm
 
+# setup には含めない（任意機能）。docs/spotify-cache.md を参照。
+spotify-cache-monitor:bootstrap/spotify-cache-monitor.pm
+	perl bootstrap/spotify-cache-monitor.pm
+
+spotify-cache-monitor-uninstall:bootstrap/spotify-cache-monitor.pm
+	perl bootstrap/spotify-cache-monitor.pm uninstall
+
 mac: os
 linux: os
 
-.PHONY: help setup os wezterm herdr ghostty nix ghtkn ssh cmux raycast karabiner lazyvim nix-repair nix-doctor nix-update nix-sync mac linux \
+.PHONY: help setup os wezterm herdr ghostty nix ghtkn ssh cmux raycast karabiner lazyvim spotify-cache-monitor spotify-cache-monitor-uninstall nix-repair nix-doctor nix-update nix-sync mac linux \
 	check lint lint-workflows fmt fmt-check build rollback outdated
 
 help:
@@ -59,6 +66,8 @@ help:
 	@echo "  make raycast  # Link the Nix Raycast app and restart it if running (Apple Silicon macOS)"
 	@echo "  make karabiner # Link Karabiner-Elements config and install the pinned official pkg (Apple Silicon macOS, may need sudo)"
 	@echo "  make lazyvim  # Link the separate LazyVim config"
+	@echo "  make spotify-cache-monitor # Enable the weekly Spotify cache size notification (macOS, not in setup)"
+	@echo "  make spotify-cache-monitor-uninstall # Disable it and remove the LaunchAgent plist"
 	@echo "  make nix-repair # Repair /nix mount after macOS upgrade (needs sudo)"
 	@echo "  make nix-doctor # Diagnose why nix is missing from this shell (changes nothing)"
 	@echo "  make nix-update # Update nix/flake.lock, build, and upgrade the profile (primary Mac)"
