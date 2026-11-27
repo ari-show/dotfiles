@@ -22,7 +22,7 @@ dotfiles/
 ├── docs/           # 各種ドキュメント（docs/README.md が入り口）
 ├── nix/            # flake.nix（dotfiles-tools の定義）
 ├── scripts/        # 補助スクリプト（nix-doctor / outdated など）
-├── Brewfile        # macOS の任意の GUI アプリ（Homebrew）
+├── Brewfile        # macOS の Homebrew パッケージ（暫定棚卸し）
 ├── makefile        # セットアップ用ターゲット（make help で一覧）
 ├── nix-install.sh  # Nix のインストールスクリプト
 └── nix-repair.sh   # macOS アップグレード後の /nix 修復スクリプト
@@ -52,15 +52,18 @@ git clone https://github.com/ShotaArima/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 ```
 
-macOS で Homebrew を利用する場合、必要なアプリを `Brewfile` に追加し、
-任意で次のコマンドを実行してインストールできます。初期状態では項目はありません。
+macOS の `Brewfile` は、この Mac に直接インストールされていた Homebrew
+パッケージの暫定的な棚卸しです。CLI は原則 Nix、GUI アプリは必要に応じて
+Homebrew で管理します。Nix と重複する項目も移行確認が済むまでは残しています。
+別の Mac では内容を確認してから、必要に応じて次を実行してください。
 
 ```bash
-brew bundle --file=./Brewfile
+brew bundle check --file=./Brewfile
+brew bundle install --file=./Brewfile
 ```
 
-この操作には Homebrew が必要です。Ghostty は Nix で管理します。
-`make setup` は設定のリンクを行い、Homebrew アプリのインストールは実行しません。
+`make setup` は Homebrew のインストールを実行しません。削除候補の確認や
+Nix への移行手順は [Homebrew の管理](./docs/homebrew.md) を参照してください。
 
 ---
 
