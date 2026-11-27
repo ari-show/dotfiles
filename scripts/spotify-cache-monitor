@@ -1,0 +1,32 @@
+#!/bin/bash
+# Measure the Spotify cache directory; never modify its contents.
+set -eu
+cache_dir=${SPOTIFY_CACHE_DIR:-"$HOME/Library/Caches/com.spotify.client"}
+threshold_kib=${SPOTIFY_CACHE_THRESHOLD_KIB:-5242880} # 5 GiB
+case "$threshold_kib" in
+  ''|*[!0-9]*) echo 'SPOTIFY_CACHE_THRESHOLD_KIB must be a positive integer' >&2; exit 2 ;;
+esac
+if [ "$threshold_kib" -le 0 ]; then
+  echo 'SPOTIFY_CACHE_THRESHOLD_KIB must be a positive integer' >&2
+  exit 2
+fi
+if [ ! -d "$cache_dir" ]; then
+  echo "Spotify cache directory not found: $cache_dir"
+  exit 0
+fi
+size_kib=$(/usr/bin/du -sk "$cache_dir" | /usr/bin/awk '{print $1}')
+if [ "$size_kib" -ge "$threshold_kib" ]; then
+  size_gib=$(/usr/bin/awk -v size="$size_kib" 'BEGIN {printf "%.1f", size / 1048576}')
+  message="Spotify のキャッシュディレクトリは約 ${size_gib} GiB です。Spotify の設定から確認してください。"
+  if [ "${SPOTIFY_CACHE_DRY_RUN:-0}" = 1 ]; then
+    printf '%s\n' "$message"
+  else
+    /usr/bin/osascript - "$message" <<'APPLESCRIPT'
+on run argv
+  display notification (item 1 of argv) with title "Spotify の容量確認"
+end run
+APPLESCRIPT
+  fi
+else
+  echo "Spotify cache directory: ${size_kib} KiB (threshold: ${threshold_kib} KiB)"
+fi

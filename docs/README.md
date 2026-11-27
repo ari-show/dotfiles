@@ -8,6 +8,7 @@ dotfiles リポジトリの各種ドキュメントのインデックス。
 docs/
 ├── README.md                     # このファイル（ドキュメントの入り口）
 ├── mac.md                        # macOS 向けセットアップ・更新手順
+├── spotify-cache.md              # Spotify の容量確認
 ├── ghostty/
 │   └── installing/README.md      # Ghostty のインストールと設定
 ├── wezterm/
@@ -34,6 +35,7 @@ docs/
 
 | ドキュメント | 内容 |
 |---|---|
+| [Spotify の容量確認](./spotify-cache.md) | キャッシュ容量の週次通知 |
 | [herdr エージェントオーケストレーション](./herdr/agent-orchestration.md) | herdr CLI で claude 等の AI エージェントを起動・タスク投入・完了検知する方法 |
 
 ## 関連
