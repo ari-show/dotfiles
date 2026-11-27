@@ -13,20 +13,22 @@ Spotify の保存先を変更している場合、その場所はこの監視対
 
 ## 有効化
 
-リポジトリを `~/dotfiles` に置いた macOS のログインユーザーで実行します。
-他の場所に置く場合は plist の `ProgramArguments` 内のパスを修正してください。
+macOS のログインユーザーで、リポジトリのルートから実行します。
 `make setup` では自動的に有効化しません。
 
 ```bash
-mkdir -p ~/Library/LaunchAgents
-cp ~/dotfiles/.config/launchd/com.dotfiles.spotify-cache-monitor.plist ~/Library/LaunchAgents/
-launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/com.dotfiles.spotify-cache-monitor.plist
+make spotify-cache-monitor
 ```
+
+plist を `~/Library/LaunchAgents/` にコピーし、スクリプトのパスを実行したリポジトリの
+場所に書き換えてから登録します。既に登録済みなら一度停止して入れ直します。
+常用するリポジトリ（通常は `~/dotfiles`）で実行してください。worktree で実行すると
+その worktree のスクリプトを参照するため、worktree を消すと動かなくなります。
 
 通知が届かない場合は、macOS の通知設定でスクリプトの通知が許可されているか確認します。
 閾値は plist に `EnvironmentVariables` の `SPOTIFY_CACHE_THRESHOLD_KIB` を
-正の整数で追加して変更できます（単位 KiB、既定値 5242880）。plist を変更した場合は
-下記の停止を実行し、コピーと bootstrap をやり直します。
+正の整数で追加して変更できます（単位 KiB、既定値 5242880）。リポジトリの plist を
+変更した場合は `make spotify-cache-monitor` を再実行します。
 
 ## 動作確認と停止
 
@@ -35,10 +37,9 @@ launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/com.dotfiles.spotify-c
 SPOTIFY_CACHE_DRY_RUN=1 ~/dotfiles/scripts/spotify-cache-monitor
 # ジョブの登録状態
 launchctl print "gui/$(id -u)/com.dotfiles.spotify-cache-monitor"
-# 停止
-launchctl bootout "gui/$(id -u)" ~/Library/LaunchAgents/com.dotfiles.spotify-cache-monitor.plist
-rm ~/Library/LaunchAgents/com.dotfiles.spotify-cache-monitor.plist
+# 停止（plist も削除）
+make spotify-cache-monitor-uninstall
 ```
 
-ディレクトリが存在しない場合は何も通知しません。再有効化するときは plist を再コピーして
-bootstrap してください。
+ディレクトリが存在しない場合は何も通知しません。再有効化するときは
+`make spotify-cache-monitor` を実行します。
