@@ -1,0 +1,26 @@
+{
+  "title": "Caps Lock to Toggle Caffeinate",
+  "rules": [
+    {
+      "description": "Caps Lockでcaffeinateをトグル（大文字入力は無効化）",
+      "manipulators": [
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "caps_lock",
+            "modifiers": {
+              "optional": [
+                "any"
+              ]
+            }
+          },
+          "to": [
+            {
+              "shell_command": "if pgrep -x caffeinate > /dev/null; then pkill -x caffeinate; osascript -e 'display notification \"通常のスリープモードに戻りました\" with title \"Caffeinate OFF\"'; else caffeinate -i -d & osascript -e 'display notification \"スリープを防止しています\" with title \"Caffeinate ON\"'; fi"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

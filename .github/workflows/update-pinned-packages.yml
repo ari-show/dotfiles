@@ -1,5 +1,5 @@
 # Dependabot の対象外の固定パッケージを更新し、ビルドに成功したら PR を作る。
-# ghtkn は Linux、cmux と Raycast は Apple Silicon macOS で検証する。
+# ghtkn は Linux、cmux・Raycast・Karabiner-Elements は Apple Silicon macOS で検証する。
 name: Update pinned Nix packages
 
 on:
@@ -251,6 +251,63 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: deps/update-raycast-pin
+        run: |
+          gh workflow run check.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
+          gh workflow run check-macos.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
+
+  karabiner:
+    concurrency:
+      group: update-karabiner
+      cancel-in-progress: false
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Nix
+        uses: cachix/install-nix-action@3dc140bfc76c49fbd4dd958429132e3746bcb086 # v31.11.5
+      - name: Check latest stable release
+        id: update
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/update-karabiner
+      - name: Build and verify on Apple Silicon
+        if: steps.update.outputs.changed == 'true'
+        env:
+          EXPECTED: ${{ steps.update.outputs.after }}
+        run: |
+          set -euo pipefail
+          nix build ./nix#karabiner-elements --out-link "$RUNNER_TEMP/karabiner"
+          dir="$RUNNER_TEMP/karabiner/share/karabiner-elements"
+          test "$(cat "$dir/version")" = "${EXPECTED}"
+          # インストールはしない。make karabiner と同じく公式の署名・公証を確認する。
+          pkgutil --check-signature "$dir/Karabiner-Elements.pkg" | tee "$RUNNER_TEMP/signature.txt"
+          grep -q '(G43BCU2T37)' "$RUNNER_TEMP/signature.txt"
+          grep -q 'trusted by the Apple notary service' "$RUNNER_TEMP/signature.txt"
+          spctl --assess --type install --verbose "$dir/Karabiner-Elements.pkg"
+      - name: Create pull request
+        id: cpr
+        if: steps.update.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@3ffccacd46053766916f087ce41d627c0b8cf2d1 # v8.1.3
+        with:
+          branch: deps/update-karabiner
+          delete-branch: true
+          sign-commits: true
+          add-paths: nix/karabiner-source.json
+          commit-message: 'chore(karabiner): update to ${{ steps.update.outputs.after }}'
+          title: 'chore(karabiner): update to ${{ steps.update.outputs.after }}'
+          body: |
+            Karabiner-Elements を ${{ steps.update.outputs.before }} から ${{ steps.update.outputs.after }} に更新します。
+
+            - [リリースノート](https://github.com/pqrs-org/Karabiner-Elements/releases/tag/v${{ steps.update.outputs.after }})
+            - 公式 DMG の SHA-256 を GitHub の asset digest から取得しています。
+            - Apple Silicon macOS で Nix ビルドと、同梱 pkg の署名（Team ID G43BCU2T37）・公証を確認済みです。
+            - マージ後、`git pull`・`make nix-sync`・`make karabiner` で手元に反映してください（sudo が必要です）。
+          labels: dependencies
+      - name: Run checks on the pull request branch
+        if: steps.cpr.outputs.pull-request-operation == 'created' || steps.cpr.outputs.pull-request-operation == 'updated'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: deps/update-karabiner
         run: |
           gh workflow run check.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
           gh workflow run check-macos.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"

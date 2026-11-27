@@ -30,3 +30,6 @@ secrets/
 
 # バックアップディレクトリの除外
 back-up/
+
+# Karabiner-Elements が設定変更のたびに自動で作るバックアップ
+.config/karabiner/automatic_backups/

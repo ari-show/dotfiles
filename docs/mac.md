@@ -107,6 +107,32 @@ Raycast も cmux と同様に `nix/raycast-source.json` で版・DMG の URL・S
 同じ workflow が Raycast 公式の最新版ダウンロード先を確認し、Apple Silicon macOS で
 ビルド・版番号・コード署名と公証を検証してから更新 PR を作ります。
 
+### Karabiner-Elements（Apple Silicon Mac）
+
+Karabiner-Elements は root 権限のデーモンとドライバを `/Applications`・`/Library` に置く必要があり、
+`nix profile` から直接は動かせません。そのため公式の署名済みインストーラー（`.pkg`）を
+`nix/karabiner-source.json` で版と SHA-256 を固定して `dotfiles-tools` に含め、
+`make karabiner` が次の処理を行います（`make setup` にも含まれます）。
+
+- `~/.config/karabiner` をディレクトリごと `.config/karabiner` にリンクする（既存のものは `back-up/<日時>/karabiner` に退避）
+- 入っている版が固定版より古い、または未インストールなら、pkg の署名（Team ID `G43BCU2T37`）と公証を確認してから
+  `sudo installer` で入れる。同じ版なら何もせず、新しい版が入っている場合はダウングレードしない
+
+```bash
+make nix-sync
+make karabiner
+```
+
+初回インストール時は、Karabiner-Elements の案内に従ってシステム設定でドライバと入力監視を許可します。
+同じ workflow が公式の最新安定版を確認し、Apple Silicon macOS でビルドと pkg の署名・公証を検証してから更新 PR を作ります。
+
+#### 設定の変更
+
+設定は `.config/karabiner/karabiner.json` で管理します。GUI で変更してもリンク先のこのリポジトリに
+直接書き込まれるので、GUI で操作したらそのつどブランチを切って差分を PR にします。
+`.config/karabiner/assets/complex_modifications/` はインポート用のルール定義、
+`automatic_backups/` は Karabiner が自動で作るバックアップで、Git の管理対象外です。
+
 ghtkn v0.4.0 以降は `ghtkn get` から device flow が自動起動しないため、
 cmux 向けの gh ラッパーは不要です。認証が必要な場合は手動で `ghtkn auth` を実行します。
 

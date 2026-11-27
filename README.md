@@ -18,7 +18,7 @@ Nix + make + perl でセットアップを自動化している。
 dotfiles/
 ├── bootstrap/      # セットアップ用の perl スクリプト
 ├── config/         # OS ごとの設定ファイル（mac / linux）
-├── .config/        # ~/.config 配下にリンクする設定（wezterm / ghostty / herdr / nix）と ssh の追加設定
+├── .config/        # ~/.config 配下にリンクする設定（wezterm / ghostty / herdr / nix / karabiner など）と ssh の追加設定
 ├── docs/           # 各種ドキュメント（docs/README.md が入り口）
 ├── nix/            # flake.nix（dotfiles-tools の定義）
 ├── scripts/        # 補助スクリプト（nix-doctor / outdated など）
