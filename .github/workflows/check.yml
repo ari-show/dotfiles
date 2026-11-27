@@ -30,7 +30,7 @@ jobs:
         uses: cachix/install-nix-action@3dc140bfc76c49fbd4dd958429132e3746bcb086 # v31.11.5
 
       # /nix/store をキャッシュして、omnigent の Python 依存などを毎回ビルドし直さないようにする。
-      # キーは flake / omnigent の依存や、codex / cmux / raycast の固定版（nix/*-source.json）が変わったときだけ変わる。
+      # キーは flake / omnigent の依存や、codex / cmux / raycast / karabiner の固定版（nix/*-source.json）が変わったときだけ変わる。
       - name: Restore and save Nix store
         uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569 # v7
         with:

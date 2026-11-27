@@ -1,0 +1,99 @@
+{
+    "profiles": [
+        {
+            "name": "JIS",
+            "virtual_hid_keyboard": { "keyboard_type_v2": "jis" }
+        },
+        {
+            "complex_modifications": {
+                "rules": [
+                    {
+                        "description": "Caps Lockでcaffeinateをトグル（大文字入力は無効化）",
+                        "manipulators": [
+                            {
+                                "from": {
+                                    "key_code": "caps_lock",
+                                    "modifiers": { "optional": ["any"] }
+                                },
+                                "to": [{ "shell_command": "if pgrep -x caffeinate > /dev/null; then pkill -x caffeinate; osascript -e 'display notification \"通常のスリープモードに戻りました\" with title \"Caffeinate OFF\"'; else caffeinate -i -d & osascript -e 'display notification \"スリープを防止しています\" with title \"Caffeinate ON\"'; fi" }],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
+                        "description": "［ US ］左右のコマンドキー（⌘）を、単独で押したときは 英数・かな キー として扱う（左⌘は 英数、右⌘は かな）",
+                        "manipulators": [
+                            {
+                                "description": " LEFT COMMAND → EISUU ",
+                                "from": {
+                                    "key_code": "left_command",
+                                    "modifiers": { "optional": ["any"] }
+                                },
+                                "to": [{ "key_code": "left_command" }],
+                                "to_if_alone": [{ "key_code": "japanese_eisuu" }],
+                                "type": "basic"
+                            },
+                            {
+                                "description": " RIGHT COMMAND → KANA ",
+                                "from": {
+                                    "key_code": "right_command",
+                                    "modifiers": { "optional": ["any"] }
+                                },
+                                "to": [{ "key_code": "right_command" }],
+                                "to_if_alone": [{ "key_code": "japanese_kana" }],
+                                "type": "basic"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "devices": [
+                {
+                    "identifiers": {
+                        "is_keyboard": true,
+                        "product_id": 4137,
+                        "vendor_id": 39658
+                    },
+                    "simple_modifications": [
+                        {
+                            "from": { "key_code": "caps_lock" },
+                            "to": [{ "key_code": "right_control" }]
+                        },
+                        {
+                            "from": { "key_code": "left_alt" },
+                            "to": [{ "key_code": "japanese_eisuu" }]
+                        },
+                        {
+                            "from": { "key_code": "left_control" },
+                            "to": [{ "key_code": "left_option" }]
+                        },
+                        {
+                            "from": { "key_code": "right_alt" },
+                            "to": [{ "key_code": "japanese_kana" }]
+                        }
+                    ]
+                },
+                {
+                    "identifiers": {
+                        "is_keyboard": true,
+                        "product_id": 2,
+                        "vendor_id": 7847
+                    },
+                    "simple_modifications": [
+                        {
+                            "from": { "key_code": "left_alt" },
+                            "to": [{ "key_code": "japanese_eisuu" }]
+                        },
+                        {
+                            "from": { "key_code": "right_alt" },
+                            "to": [{ "key_code": "japanese_kana" }]
+                        }
+                    ]
+                }
+            ],
+            "name": "US",
+            "selected": true,
+            "virtual_hid_keyboard": { "keyboard_type_v2": "ansi" }
+        }
+    ]
+}

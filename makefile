@@ -3,7 +3,7 @@
 #  PATH を足す方法では直らない)
 NIX := $(shell command -v nix 2>/dev/null || echo /nix/var/nix/profiles/default/bin/nix)
 
-setup: os wezterm herdr ghostty nix ghtkn ssh cmux raycast lazyvim
+setup: os wezterm herdr ghostty nix ghtkn ssh cmux raycast karabiner lazyvim
 
 .PHONY: help setup mac uv-check
 os:bootstrap/setup.pm
@@ -33,13 +33,16 @@ cmux:bootstrap/cmux.pm
 raycast:bootstrap/raycast.pm
 	perl bootstrap/raycast.pm
 
+karabiner:bootstrap/karabiner.pm
+	perl bootstrap/karabiner.pm
+
 lazyvim:bootstrap/lazyvim.pm
 	perl bootstrap/lazyvim.pm
 
 mac: os
 linux: os
 
-.PHONY: help setup os wezterm herdr ghostty nix ghtkn ssh cmux raycast lazyvim nix-repair nix-doctor nix-update nix-sync mac linux \
+.PHONY: help setup os wezterm herdr ghostty nix ghtkn ssh cmux raycast karabiner lazyvim nix-repair nix-doctor nix-update nix-sync mac linux \
 	check lint lint-workflows fmt fmt-check build rollback outdated
 
 help:
@@ -54,6 +57,7 @@ help:
 	@echo "  make ssh      # Use the 1Password SSH agent (adds one Include line to ~/.ssh/config if missing)"
 	@echo "  make cmux     # Link cmux config and the Nix app (Apple Silicon macOS)"
 	@echo "  make raycast  # Link the Nix Raycast app and restart it if running (Apple Silicon macOS)"
+	@echo "  make karabiner # Link Karabiner-Elements config and install the pinned official pkg (Apple Silicon macOS, may need sudo)"
 	@echo "  make lazyvim  # Link the separate LazyVim config"
 	@echo "  make nix-repair # Repair /nix mount after macOS upgrade (needs sudo)"
 	@echo "  make nix-doctor # Diagnose why nix is missing from this shell (changes nothing)"

@@ -202,11 +202,42 @@
               inherit (raycastSource) url hash;
             };
           };
+          # Karabiner-Elements はデーモンとドライバを root で /Applications・/Library に置く必要があり、
+          # nix profile からは動かせない。公式の署名済みインストーラー（.pkg）を版と hash で固定して
+          # share/karabiner-elements に置き、`make karabiner` が `sudo installer` で入れる。
+          karabinerSource = builtins.fromJSON (builtins.readFile ./karabiner-source.json);
+          karabiner-elements = pkgs.stdenvNoCC.mkDerivation {
+            pname = "karabiner-elements";
+            version = karabinerSource.version;
+            src = pkgs.fetchurl {
+              url = "https://github.com/pqrs-org/Karabiner-Elements/releases/download/v${karabinerSource.version}/Karabiner-Elements-${karabinerSource.version}.dmg";
+              inherit (karabinerSource) hash;
+            };
+            nativeBuildInputs = [ pkgs.undmg ];
+            sourceRoot = ".";
+            # 署名を壊さないよう .pkg には手を加えない。
+            dontFixup = true;
+            installPhase = ''
+              runHook preInstall
+              dir="$out/share/karabiner-elements"
+              mkdir -p "$dir"
+              cp Karabiner-Elements.pkg "$dir/"
+              echo "$version" > "$dir/version"
+              runHook postInstall
+            '';
+            meta = {
+              description = "Official signed installer of Karabiner-Elements (installed by make karabiner)";
+              homepage = "https://karabiner-elements.pqrs.org/";
+              license = pkgs.lib.licenses.unlicense;
+              platforms = [ "aarch64-darwin" ];
+            };
+          };
           # GUI アプリは Apple Silicon Mac 専用。Linux の profile には含めない。
           darwinTools = pkgs.lib.optionals (system == "aarch64-darwin") [
             cmux
             pkgs.ghostty-bin
             pkgs.hidden-bar
+            karabiner-elements
             raycast
             pkgs.sketchybar
           ];
@@ -225,7 +256,7 @@
           dotfiles-tools = dotfilesTools;
           default = dotfilesTools;
         }
-        // pkgs.lib.optionalAttrs (system == "aarch64-darwin") { inherit cmux raycast; }
+        // pkgs.lib.optionalAttrs (system == "aarch64-darwin") { inherit cmux karabiner-elements raycast; }
       );
 
       # `make fmt` / `make fmt-check` が使う整形ツール。checks.formatting と同じ版を使う。
