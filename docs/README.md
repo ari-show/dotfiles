@@ -8,6 +8,7 @@ dotfiles リポジトリの各種ドキュメントのインデックス。
 docs/
 ├── README.md                     # このファイル（ドキュメントの入り口）
 ├── mac.md                        # macOS 向けセットアップ・更新手順
+├── homebrew.md                   # Homebrew の棚卸しと整理
 ├── ghostty/
 │   └── installing/README.md      # Ghostty のインストールと設定
 ├── wezterm/
@@ -34,6 +35,7 @@ docs/
 
 | ドキュメント | 内容 |
 |---|---|
+| [Homebrew の管理](./homebrew.md) | パッケージの棚卸し、重複確認と整理 |
 | [herdr エージェントオーケストレーション](./herdr/agent-orchestration.md) | herdr CLI で claude 等の AI エージェントを起動・タスク投入・完了検知する方法 |
 
 ## 関連

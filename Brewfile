@@ -1,1 +1,20 @@
-# Homebrew で管理するアプリを必要に応じて追加する。
+# 現在この Mac に直接インストールされているものの暫定的な棚卸し。
+# Nix と重複する CLI も、移行確認が済むまでは残す。
+brew "alp"
+brew "ansible"
+brew "aom"
+brew "arp-scan"
+brew "composer"
+brew "f3"
+brew "fd"
+brew "leaf-markdown-viewer"
+brew "make"
+brew "maven"
+brew "p7zip"
+brew "php"
+brew "poppler"
+brew "smartmontools"
+brew "tree"
+
+cask "datagrip"
+cask "wezterm@nightly"
