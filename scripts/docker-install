@@ -1,0 +1,40 @@
+#!/bin/bash
+set -euo pipefail
+
+if [[ "$(uname -s)" != Darwin || "$(uname -m)" != arm64 ]]; then
+  echo 'Docker Desktop is supported here only on Apple Silicon macOS.' >&2
+  exit 1
+fi
+if pgrep -x Docker >/dev/null; then
+  echo 'Quit Docker Desktop before installing.' >&2
+  exit 1
+fi
+share="$HOME/.nix-profile/share/docker-desktop"
+dmg="$share/Docker.dmg"
+[[ -f "$dmg" && -f "$share/version" ]] || { echo 'Run make nix-sync first.' >&2; exit 1; }
+pinned=$(cat "$share/version")
+plist=/Applications/Docker.app/Contents/Info.plist
+if [[ -f "$plist" ]]; then
+  current=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$plist")
+  if [[ "$current" == "$pinned" ]]; then
+    echo "Docker Desktop $pinned is already installed."
+    exit 0
+  fi
+  echo "Existing Docker Desktop $current differs from pinned $pinned; refusing automatic replacement." >&2
+  echo 'Review the upgrade or downgrade and use the official installer manually.' >&2
+  exit 1
+fi
+mount=$(mktemp -d "${TMPDIR:-/tmp}/docker-desktop.XXXXXXXX")
+attached=0
+cleanup() {
+  if [[ "$attached" == 1 ]]; then hdiutil detach "$mount"; fi
+  rmdir "$mount"
+}
+trap cleanup EXIT
+hdiutil attach -nobrowse -readonly -mountpoint "$mount" "$dmg"
+attached=1
+app="$mount/Docker.app"
+codesign --verify --deep --strict "$app"
+signature=$(codesign -dv "$app" 2>&1)
+[[ "$signature" == *'TeamIdentifier=9BNSXJN65R'* ]] || { echo 'Unexpected Docker signature' >&2; exit 1; }
+sudo "$app/Contents/MacOS/install"
