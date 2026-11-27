@@ -1,64 +1,58 @@
-#!/usr/bin/env python3
-"""Merge the repository's managed Docker Engine settings without touching other keys."""
-import copy
-import datetime
-import json
-import os
-from pathlib import Path
-import shutil
-import subprocess
-import sys
-import tempfile
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use feature 'say';
+use FindBin qw($RealBin);
+use File::Copy qw(copy);
+use File::Path qw(make_path);
+use File::Temp qw(tempfile);
+use JSON::PP;
 
-
-def merge(target, source):
-    for key, value in source.items():
-        if isinstance(value, dict):
-            if key in target and not isinstance(target[key], dict):
-                raise ValueError(f"{key} is not an object")
-            merge(target.setdefault(key, {}), value)
-        else:
-            target[key] = value
-
-
-def main():
-    if sys.platform != "darwin":
-        raise RuntimeError("Docker Desktop configuration is supported on macOS only")
-    if subprocess.run(["pgrep", "-x", "Docker"], stdout=subprocess.DEVNULL).returncode == 0:
-        raise RuntimeError("Quit Docker Desktop before changing its Engine configuration")
-    source = Path(__file__).resolve().parent.parent / "config/mac/docker-engine.json"
-    target = Path.home() / ".docker/daemon.json"
-    if target.is_symlink():
-        raise RuntimeError(f"Refusing to replace symlink: {target}")
-    managed = json.loads(source.read_text())
-    original = json.loads(target.read_text()) if target.exists() else {}
-    if not isinstance(original, dict) or not isinstance(managed, dict):
-        raise ValueError("Engine configuration must be a JSON object")
-    result = copy.deepcopy(original)
-    merge(result, managed)
-    if result == original:
-        print("Docker Engine settings are already up to date")
-        return
-    target.parent.mkdir(parents=True, exist_ok=True)
-    if target.exists():
-        stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S-%f")
-        backup = target.with_name(f"daemon.json.backup-{stamp}")
-        shutil.copy2(target, backup)
-        print(f"Backup: {backup}")
-    fd, name = tempfile.mkstemp(prefix=".daemon.json.", dir=target.parent)
-    try:
-        with os.fdopen(fd, "w") as stream:
-            json.dump(result, stream, indent=2, ensure_ascii=False)
-            stream.write("\n")
-        os.replace(name, target)
-    finally:
-        if os.path.exists(name):
-            os.unlink(name)
-    print(f"Updated {target}; start Docker Desktop to apply it")
-
-
-if __name__ == "__main__":
-    try:
-        main()
-    except (OSError, ValueError, RuntimeError) as exc:
-        sys.exit(f"docker-config: {exc}")
+$^O eq 'darwin' or die "Docker Desktop configuration is supported on macOS only\n";
+my $pid = `/usr/bin/pgrep -x Docker`;
+my $status = $? >> 8;
+$status == 1 or die $status == 0 ? "Quit Docker Desktop before changing its Engine configuration\n" : "Failed to check Docker Desktop status\n";
+my $home = $ENV{HOME} or die "HOME is not set\n";
+my $dir = "$home/.docker";
+my $target = "$dir/daemon.json";
+-l $target and die "Refusing to replace symlink: $target\n";
+my $json = JSON::PP->new->canonical->pretty;
+sub read_json {
+    my ($path) = @_;
+    open my $fh, '<', $path or die "Cannot read $path: $!\n";
+    local $/;
+    my $value = $json->decode(<$fh>);
+    close $fh or die "Cannot close $path: $!\n";
+    ref($value) eq 'HASH' or die "$path must contain a JSON object\n";
+    return $value;
+}
+sub merge {
+    my ($target, $source) = @_;
+    for my $key (keys %$source) {
+        if (ref($source->{$key}) eq 'HASH') {
+            $target->{$key} //= {};
+            ref($target->{$key}) eq 'HASH' or die "$key is not an object\n";
+            merge($target->{$key}, $source->{$key});
+        } else {
+            $target->{$key} = $source->{$key};
+        }
+    }
+}
+my $managed = read_json("$RealBin/../config/mac/docker-engine.json");
+my $data = -e $target ? read_json($target) : {};
+my $before = $json->encode($data);
+merge($data, $managed);
+my $after = $json->encode($data);
+if ($before eq $after) { say 'Docker Engine settings are already up to date'; exit 0; }
+make_path($dir);
+if (-e $target) {
+    my ($backup_fh, $backup) = tempfile('daemon.json.backup-XXXXXXXX', DIR => $dir, UNLINK => 0);
+    close $backup_fh or die "Cannot close backup: $!\n";
+    copy($target, $backup) or die "Cannot back up $target: $!\n";
+    say "Backup: $backup";
+}
+my ($fh, $temp) = tempfile('.daemon.json.XXXXXXXX', DIR => $dir, UNLINK => 1);
+print {$fh} $after or die "Cannot write $temp: $!\n";
+close $fh or die "Cannot close $temp: $!\n";
+rename $temp, $target or die "Cannot replace $target: $!\n";
+say "Updated $target; start Docker Desktop to apply it";

@@ -40,7 +40,7 @@ docker-install:
 	bash scripts/docker-install
 
 docker-config:
-	python3 scripts/docker-config
+	perl scripts/docker-config
 
 lazyvim:bootstrap/lazyvim.pm
 	perl bootstrap/lazyvim.pm
