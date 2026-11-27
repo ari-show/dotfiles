@@ -1,0 +1,64 @@
+#!/usr/bin/env python3
+"""Merge the repository's managed Docker Engine settings without touching other keys."""
+import copy
+import datetime
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import tempfile
+
+
+def merge(target, source):
+    for key, value in source.items():
+        if isinstance(value, dict):
+            if key in target and not isinstance(target[key], dict):
+                raise ValueError(f"{key} is not an object")
+            merge(target.setdefault(key, {}), value)
+        else:
+            target[key] = value
+
+
+def main():
+    if sys.platform != "darwin":
+        raise RuntimeError("Docker Desktop configuration is supported on macOS only")
+    if subprocess.run(["pgrep", "-x", "Docker"], stdout=subprocess.DEVNULL).returncode == 0:
+        raise RuntimeError("Quit Docker Desktop before changing its Engine configuration")
+    source = Path(__file__).resolve().parent.parent / "config/mac/docker-engine.json"
+    target = Path.home() / ".docker/daemon.json"
+    if target.is_symlink():
+        raise RuntimeError(f"Refusing to replace symlink: {target}")
+    managed = json.loads(source.read_text())
+    original = json.loads(target.read_text()) if target.exists() else {}
+    if not isinstance(original, dict) or not isinstance(managed, dict):
+        raise ValueError("Engine configuration must be a JSON object")
+    result = copy.deepcopy(original)
+    merge(result, managed)
+    if result == original:
+        print("Docker Engine settings are already up to date")
+        return
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if target.exists():
+        stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+        backup = target.with_name(f"daemon.json.backup-{stamp}")
+        shutil.copy2(target, backup)
+        print(f"Backup: {backup}")
+    fd, name = tempfile.mkstemp(prefix=".daemon.json.", dir=target.parent)
+    try:
+        with os.fdopen(fd, "w") as stream:
+            json.dump(result, stream, indent=2, ensure_ascii=False)
+            stream.write("\n")
+        os.replace(name, target)
+    finally:
+        if os.path.exists(name):
+            os.unlink(name)
+    print(f"Updated {target}; start Docker Desktop to apply it")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (OSError, ValueError, RuntimeError) as exc:
+        sys.exit(f"docker-config: {exc}")

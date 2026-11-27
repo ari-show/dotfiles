@@ -5,6 +5,26 @@ macOS の Docker Desktop では、Docker CLI を Nix で管理しても、Linux 
 BuildKit GC を使って容量を管理できます。これは定期実行のジョブではなく、ビルド時に
 容量や経過時間に基づいてキャッシュを整理する仕組みです。
 
+## インストールと設定の反映
+
+Apple Silicon Mac 向けに、公式 DMG の版と SHA-256 を `nix/docker-desktop-source.json` に
+固定し、`dotfiles-tools` に含めています。マージ後に `make nix-sync` で取得し、Docker
+Desktop を終了して `make docker-install` を実行します。初回インストールには sudo が必要です。
+既存の同じ版はそのまま使い、別の版が入っている場合は自動で置き換えません。更新時は
+固定版と公式リリースノートを確認し、公式インストーラーで手動更新してください。
+DMG は Docker の配布期限により後日取得できなくなる場合があるため、固定版は更新が必要です。
+Docker Desktop 自身の更新機能を使った場合も、固定版との差を確認してください。
+4.100.0 / 4.100.1 には、更新時にイメージストアの切り替えで既存のイメージや
+コンテナが見えなくなる既知の問題があります。対処方法は
+[公式リリースノート](https://docs.docker.com/desktop/release-notes/#41001) を確認してください。
+
+Engine 設定は `config/mac/docker-engine.json` で管理します。Docker Desktop を終了して
+`make docker-config` を実行すると、管理対象のキーだけを `~/.docker/daemon.json` に
+マージし、既存ファイルを同じディレクトリにバックアップします。認証情報、context、
+Desktop のその他の設定は管理しません。再起動すると設定が反映されます。GUI で管理対象の
+設定を変更した場合、次回の `make docker-config` でリポジトリの値に戻ります。
+どちらのターゲットも `make setup` からは自動実行しません。
+
 ## 使用状況を確認
 
 Docker Desktop を起動してから実行します。
@@ -22,8 +42,7 @@ docker buildx du
 
 ## Docker Desktop の自動 GC を調整
 
-Docker Desktop の **Settings → Docker Engine** で既存の JSON を確認し、他の設定を
-残したまま `builder.gc` を次のように設定します。
+リポジトリでは `builder.gc` を次のように設定しています。
 
 ```json
 {
@@ -36,8 +55,7 @@ Docker Desktop の **Settings → Docker Engine** で既存の JSON を確認し
 }
 ```
 
-これは JSON 全体の置き換え用ではなく、変更する部分の例です。Apply & Restart で
-反映します。Docker Desktop の標準値は 20GB です。10GB は容量を抑えるための例で、
+これは JSON 全体の置き換え用ではなく、管理する部分です。Docker Desktop の標準値は 20GB です。10GB は容量を抑えるための設定で、
 再ビルドが遅くなる場合は増やせます。GC の目安であり常時の厳密な上限ではありません。
 この設定は `docker` driver の builder に適用され、`docker-container` 等の独立した
 builder には適用されません。そちらは builder ごとの `buildkitd.toml` で設定します。

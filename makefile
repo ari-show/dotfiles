@@ -36,13 +36,19 @@ raycast:bootstrap/raycast.pm
 karabiner:bootstrap/karabiner.pm
 	perl bootstrap/karabiner.pm
 
+docker-install:
+	bash scripts/docker-install
+
+docker-config:
+	python3 scripts/docker-config
+
 lazyvim:bootstrap/lazyvim.pm
 	perl bootstrap/lazyvim.pm
 
 mac: os
 linux: os
 
-.PHONY: help setup os wezterm herdr ghostty nix ghtkn ssh cmux raycast karabiner lazyvim nix-repair nix-doctor nix-update nix-sync mac linux \
+.PHONY: help setup os wezterm herdr ghostty nix ghtkn ssh cmux raycast karabiner docker-install docker-config lazyvim nix-repair nix-doctor nix-update nix-sync mac linux \
 	check lint lint-workflows fmt fmt-check build rollback outdated
 
 help:
@@ -58,6 +64,8 @@ help:
 	@echo "  make cmux     # Link cmux config and the Nix app (Apple Silicon macOS)"
 	@echo "  make raycast  # Link the Nix Raycast app and restart it if running (Apple Silicon macOS)"
 	@echo "  make karabiner # Link Karabiner-Elements config and install the pinned official pkg (Apple Silicon macOS, may need sudo)"
+	@echo "  make docker-install # Install pinned Docker Desktop (Apple Silicon macOS, requires sudo)"
+	@echo "  make docker-config # Merge managed Docker Engine settings (quit Docker Desktop first)"
 	@echo "  make lazyvim  # Link the separate LazyVim config"
 	@echo "  make nix-repair # Repair /nix mount after macOS upgrade (needs sudo)"
 	@echo "  make nix-doctor # Diagnose why nix is missing from this shell (changes nothing)"

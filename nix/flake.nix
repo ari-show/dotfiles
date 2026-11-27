@@ -206,6 +206,20 @@
           # nix profile からは動かせない。公式の署名済みインストーラー（.pkg）を版と hash で固定して
           # share/karabiner-elements に置き、`make karabiner` が `sudo installer` で入れる。
           karabinerSource = builtins.fromJSON (builtins.readFile ./karabiner-source.json);
+          dockerDesktopSource = builtins.fromJSON (builtins.readFile ./docker-desktop-source.json);
+          docker-desktop =
+            pkgs.runCommand "docker-desktop-${dockerDesktopSource.version}"
+              {
+                src = pkgs.fetchurl {
+                  inherit (dockerDesktopSource) url hash;
+                  name = "Docker.dmg";
+                };
+              }
+              ''
+                mkdir -p "$out/share/docker-desktop"
+                ln -s "$src" "$out/share/docker-desktop/Docker.dmg"
+                echo '${dockerDesktopSource.version}' > "$out/share/docker-desktop/version"
+              '';
           karabiner-elements = pkgs.stdenvNoCC.mkDerivation {
             pname = "karabiner-elements";
             version = karabinerSource.version;
@@ -238,6 +252,7 @@
             pkgs.ghostty-bin
             pkgs.hidden-bar
             karabiner-elements
+            docker-desktop
             raycast
             pkgs.sketchybar
           ];
@@ -256,7 +271,14 @@
           dotfiles-tools = dotfilesTools;
           default = dotfilesTools;
         }
-        // pkgs.lib.optionalAttrs (system == "aarch64-darwin") { inherit cmux karabiner-elements raycast; }
+        // pkgs.lib.optionalAttrs (system == "aarch64-darwin") {
+          inherit
+            cmux
+            karabiner-elements
+            raycast
+            docker-desktop
+            ;
+        }
       );
 
       # `make fmt` / `make fmt-check` が使う整形ツール。checks.formatting と同じ版を使う。
