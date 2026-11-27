@@ -73,3 +73,45 @@ docker buildx prune --max-used-space 10GB
 
 参考: [Docker の Build GC](https://docs.docker.com/build/cache/garbage-collection/)、
 [buildx prune](https://docs.docker.com/reference/cli/docker/buildx/prune/)
+
+## その他の設定候補
+
+### コンテナログのローテーション
+
+ビルドキャッシュとは別に、コンテナの標準出力ログもディスクを消費します。
+現在のデフォルトは Docker Desktop の起動後に次で確認できます。
+
+```bash
+docker info --format '{{.LoggingDriver}}'
+docker inspect -f '{{json .HostConfig.LogConfig}}' <コンテナ名>
+```
+
+Docker Engine の `json-file` でローテーションが設定されていない場合は、
+次のように 1 コンテナあたり 10MB × 3 ファイルを目安に設定できます。
+
+```json
+{
+  "log-driver": "json-file",
+  "log-opts": { "max-size": "10m", "max-file": "3" }
+}
+```
+
+`log-opts` の値は文字列で指定します。再起動後に**新規作成するコンテナ**に適用され、
+既存のコンテナは再作成するまで変更されません。古いログは削除されるため、長期保存が
+必要な場合は別途保存先を用意してください。コンテナ単位で指定した設定はそちらが優先されます。
+`local` ドライバーもローテーションを備えていますが、ログ形式や既存設定への影響を確認して
+選んでください。この例は現在の管理設定には含めていません。
+
+### Docker Desktop のリソース
+
+- **Resource Saver**: コンテナを使わない間 VM を停止して CPU・メモリの消費を抑えます。
+  デフォルトで有効ですが、常時稼働するコンテナがある場合は休止しません。再開時は数秒かかります。
+- **Disk usage limit**: VM 全体のディスク上限です。キャッシュだけでなくイメージや
+  ボリュームも含むため、小さくしすぎるとビルドや書き込みに失敗します。
+- **メモリ・CPU**: Mac の使用状況に合わせて Docker Desktop の Settings → Resources で
+  調整します。複数コンテナや重いビルドが遅い場合は増やします。
+
+これらの Desktop 設定は Engine の `daemon.json` とは別で、このリポジトリではまだ自動反映しません。
+参考: [ログ設定](https://docs.docker.com/engine/logging/configure/)、
+[Resource Saver](https://docs.docker.com/desktop/use-desktop/resource-saver/)、
+[Desktop の設定](https://docs.docker.com/desktop/settings-and-maintenance/settings/)
