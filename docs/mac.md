@@ -107,6 +107,16 @@ Raycast も cmux と同様に `nix/raycast-source.json` で版・DMG の URL・S
 同じ workflow が Raycast 公式の最新版ダウンロード先を確認し、Apple Silicon macOS で
 ビルド・版番号・コード署名と公証を検証してから更新 PR を作ります。
 
+Raycast の自己更新と Nix 管理が競合しないよう、公式の管理設定
+`DisableAutomaticUpdates` を含む `config/mac/raycast-disable-updates.mobileconfig` を用意しています。
+マージ後に Finder でこのファイルを開き、システム設定 → 一般 → デバイス管理でプロファイルを
+確認してインストールしてください。Raycast 自身の更新確認・ダウンロード・インストールが
+停止し、更新項目も非表示になります。Nix の更新 PR は引き続き作成されます。
+反映状況はデバイス管理でプロファイルを確認し、Raycast の更新項目が消えることで確認します。
+解除する場合は同じ画面から「Raycast: 自動更新を無効化」を削除してください。
+設定プロファイルは `make setup` では自動インストールされません。
+詳しくは [Raycast の管理設定](https://manual.raycast.com/enterprise/mdm-deployment) を参照してください。
+
 ### Karabiner-Elements（Apple Silicon Mac）
 
 Karabiner-Elements は root 権限のデーモンとドライバを `/Applications`・`/Library` に置く必要があり、

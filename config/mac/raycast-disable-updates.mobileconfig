@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>PayloadContent</key>
+  <array>
+    <dict>
+      <key>PayloadType</key>
+      <string>com.raycast.macos</string>
+      <key>PayloadIdentifier</key>
+      <string>com.shotaarima.dotfiles.raycast.disable-updates.settings</string>
+      <key>PayloadUUID</key>
+      <string>5FAD1692-5730-49D5-AFF1-269C76D1C86A</string>
+      <key>PayloadVersion</key>
+      <integer>1</integer>
+      <key>PayloadDisplayName</key>
+      <string>Raycast 自動更新設定</string>
+      <key>DisableAutomaticUpdates</key>
+      <true/>
+    </dict>
+  </array>
+  <key>PayloadType</key>
+  <string>Configuration</string>
+  <key>PayloadIdentifier</key>
+  <string>com.shotaarima.dotfiles.raycast.disable-updates</string>
+  <key>PayloadUUID</key>
+  <string>7CF9FF36-309E-494D-B6BE-4E0C3C8D5E7B</string>
+  <key>PayloadVersion</key>
+  <integer>1</integer>
+  <key>PayloadDisplayName</key>
+  <string>Raycast: 自動更新を無効化</string>
+  <key>PayloadDescription</key>
+  <string>Raycast の自己更新を停止し、更新を Nix で管理します。</string>
+  <key>PayloadScope</key>
+  <string>User</string>
+</dict>
+</plist>
